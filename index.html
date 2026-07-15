@@ -2,652 +2,116 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f4ede0">
-<title>N700S · Tokyo → Hiroshima</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<title>MilesTech AS · Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Shippori+Mincho:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4ede0;              /* washi-papir */
-    --glass: rgba(252, 248, 240, .82);
-    --glass-border: rgba(60, 45, 30, .10);
-    --text: #27221b;            /* sumi-blekk */
+    --bg: #f4ede0;
+    --card: #fcf8f0;
+    --border: rgba(60, 45, 30, .10);
+    --text: #27221b;
     --muted: #8a7f6d;
-    --accent: #c73e3a;          /* shu / vermillion */
-    --accent-soft: rgba(199, 62, 58, .10);
-    --indigo: #33506b;          /* ai-iro */
-    --gold: #b8860b;
-    --matcha: #5a8f5d;
+    --accent: #c73e3a;
+    --indigo: #33506b;
     --grad: linear-gradient(135deg, #c73e3a, #e0632e);
-    --radius: 22px;
-    --shadow: 0 10px 36px rgba(90, 70, 40, .16);
+    --shadow: 0 8px 30px rgba(90, 70, 40, .13);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
-    font-family: "Inter", -apple-system, sans-serif; }
-  button { font-family: inherit; cursor: pointer; }
-  .jp { font-family: "Shippori Mincho", serif; }
-
-  #map { position: fixed; inset: 0; z-index: 0; }
-  .leaflet-container { background: #ece3d2; font: inherit; }
-  .base-tiles { filter: sepia(.22) saturate(.82) brightness(1.03) contrast(.96); }
-  .leaflet-control-attribution { background: rgba(244,237,224,.7) !important; color: #a89a82 !important; font-size: 9px !important; }
-  .leaflet-control-attribution a { color: #a89a82 !important; }
-  .leaflet-popup-content-wrapper { background: #fcf8f0; color: var(--text); border-radius: 12px; box-shadow: var(--shadow); }
-  .leaflet-popup-tip { background: #fcf8f0; }
-
-  /* ---------- HUD topp ---------- */
-  #hud {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 900;
-    padding: calc(10px + env(safe-area-inset-top)) 12px 0;
-    display: flex; flex-direction: column; gap: 8px;
-    pointer-events: none;
+  body {
+    min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: calc(40px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom));
   }
-  #hud > * { pointer-events: auto; }
-
-  .glass {
-    background: var(--glass);
-    backdrop-filter: blur(22px) saturate(1.3);
-    -webkit-backdrop-filter: blur(22px) saturate(1.3);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+  /* diskret rød sol i bakgrunnen */
+  body::before {
+    content: ""; position: fixed; top: -140px; right: -140px; width: 380px; height: 380px;
+    border-radius: 50%; background: var(--accent); opacity: .06; pointer-events: none;
   }
 
-  #speed-card {
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-    padding: 14px 20px 12px; position: relative; overflow: hidden;
+  header { text-align: center; margin-bottom: 40px; }
+  .logo {
+    font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 34px;
+    letter-spacing: -.5px; line-height: 1.1;
   }
-  /* rød sol-aksent, som det japanske flagget, diskret i hjørnet */
-  #speed-card::after {
-    content: ""; position: absolute; right: -34px; top: -34px; width: 96px; height: 96px;
-    border-radius: 50%; background: var(--accent); opacity: .07; pointer-events: none;
-  }
-  .side-stat { display: flex; flex-direction: column; gap: 1px; }
-  .side-stat.right { align-items: flex-end; text-align: right; }
-  .side-stat .v { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--indigo); }
-  .side-stat .v em { font-style: normal; font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 2px; }
-  .side-stat .k { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+  .logo span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tagline { margin-top: 8px; font-size: 14px; color: var(--muted); font-weight: 500; }
+  .tagline b { color: var(--indigo); font-weight: 700; }
 
-  #speed-center { text-align: center; padding: 0 26px; }
-  #speed {
-    font-family: "Zen Kaku Gothic New", sans-serif; font-size: 64px; font-weight: 900; line-height: .95;
-    font-variant-numeric: tabular-nums;
-    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  #speed-unit { font-size: 11px; font-weight: 600; letter-spacing: 2.5px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+  main { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 16px; }
 
-  #status-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 9px 16px; gap: 10px;
+  .game {
+    display: flex; align-items: center; gap: 18px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 22px;
+    padding: 20px 22px; text-decoration: none; color: inherit;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease;
   }
-  #gps-pill { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; color: var(--muted); min-width: 0; }
-  #gps-dot { width: 8px; height: 8px; border-radius: 50%; background: #c0392b; flex-shrink: 0; }
-  #gps-dot.ok { background: var(--matcha); box-shadow: 0 0 8px rgba(90,143,93,.7); animation: pulse 2s infinite; }
-  #gps-dot.wait { background: var(--gold); animation: pulse 1s infinite; }
-  @keyframes pulse { 50% { opacity: .35; } }
-  #next-info { font-size: 12.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #next-info b { color: var(--accent); font-weight: 700; }
-  .chip {
-    background: rgba(60,45,30,.05); border: 1px solid var(--glass-border); color: var(--muted);
-    font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 999px; letter-spacing: .5px;
-    flex-shrink: 0; transition: all .2s;
+  a.game:hover, a.game:active { transform: translateY(-3px); box-shadow: 0 14px 38px rgba(90,70,40,.2); }
+  .game::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--grad); }
+  .game .emoji {
+    width: 58px; height: 58px; border-radius: 16px; flex-shrink: 0;
+    background: rgba(199,62,58,.08); display: grid; place-items: center; font-size: 30px;
   }
-  .chip.on { color: #fff; background: var(--grad); border-color: transparent; }
+  .game h2 { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 19px; font-weight: 900; margin-bottom: 2px; }
+  .game p { font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .game .arrow { margin-left: auto; color: var(--accent); font-size: 20px; flex-shrink: 0; }
 
-  /* ---------- Fremdrift (bunn) ---------- */
-  #progress-card {
-    position: fixed; left: 12px; right: 12px; z-index: 900;
-    bottom: calc(78px + env(safe-area-inset-bottom));
-    padding: 14px 18px 16px;
-  }
-  #prog-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-  #prog-title { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
-  #prog-title .jp { font-size: 12px; color: var(--accent); letter-spacing: 2px; margin-left: 6px; }
-  #prog-nums { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 14px; font-weight: 700; color: var(--indigo); }
-  #prog-nums span { color: var(--accent); }
-  #prog-nums em { font-style: normal; color: var(--muted); font-weight: 500; }
-  #prog-track { position: relative; height: 26px; }
-  #prog-line { position: absolute; top: 11px; left: 0; right: 0; height: 4px; border-radius: 4px; background: rgba(60,45,30,.12); }
-  #prog-fill {
-    position: absolute; top: 11px; left: 0; height: 4px; width: 0%; border-radius: 4px;
-    background: var(--grad); box-shadow: 0 0 10px rgba(199,62,58,.45);
-    transition: width .8s cubic-bezier(.4,0,.2,1);
-  }
-  .prog-dot {
-    position: absolute; top: 9px; width: 8px; height: 8px; border-radius: 50%;
-    background: #e6dcc8; border: 1.5px solid #b8ab92; transform: translateX(-50%);
-  }
-  .prog-dot.major { top: 7px; width: 12px; height: 12px; }
-  .prog-dot.passed { background: var(--accent); border-color: var(--accent); }
-  .prog-dot .tip {
-    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
-    font-size: 9.5px; font-weight: 700; color: var(--muted); white-space: nowrap; display: none;
-  }
-  .prog-dot.major .tip { display: block; }
-  #train-pos {
-    position: absolute; top: -6px; font-size: 20px; transform: translateX(-50%) scaleX(-1);
-    transition: left .8s cubic-bezier(.4,0,.2,1);
-    filter: drop-shadow(0 2px 5px rgba(90,70,40,.4));
+  .game.soon { opacity: .6; cursor: default; }
+  .game.soon::before { background: #b8ab92; }
+  .game.soon .emoji { background: rgba(60,45,30,.06); filter: grayscale(.4); }
+  .badge {
+    margin-left: auto; flex-shrink: 0; font-size: 10.5px; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted);
+    background: rgba(60,45,30,.07); border: 1px solid var(--border);
+    padding: 5px 11px; border-radius: 999px;
   }
 
-  /* ---------- Tab-bar ---------- */
-  #tabbar {
-    position: fixed; left: 50%; transform: translateX(-50%); z-index: 950;
-    bottom: calc(14px + env(safe-area-inset-bottom));
-    display: flex; gap: 4px; padding: 5px;
-  }
-  #tabbar button {
-    display: flex; align-items: center; gap: 7px;
-    background: none; border: none; color: var(--muted);
-    font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 17px;
-    transition: all .2s;
-  }
-  #tabbar button .ico { font-size: 17px; }
-  #tabbar button span.lbl { display: none; }
-  #tabbar button.active { background: var(--accent-soft); color: var(--accent); }
-  #tabbar button.active span.lbl { display: inline; }
-
-  /* ---------- POI toast ---------- */
-  #poi-toast {
-    position: fixed; left: 12px; right: 12px; z-index: 980;
-    bottom: calc(150px + env(safe-area-inset-bottom));
-    padding: 16px 18px; display: none;
-    border-left: 4px solid var(--accent);
-  }
-  #poi-toast.show { display: block; animation: rise .45s cubic-bezier(.2,.9,.3,1.2); }
-  @keyframes rise { from { transform: translateY(30px); opacity: 0; } }
-  #poi-toast .badge {
-    float: right; font-size: 10px; font-weight: 800; letter-spacing: 1px;
-    background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(199,62,58,.25);
-    padding: 4px 10px; border-radius: 999px;
-  }
-  #poi-toast h3 { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 17px; font-weight: 900; margin-bottom: 5px; }
-  #poi-toast p { font-size: 13px; line-height: 1.55; color: #55493a; }
-  #poi-toast .where { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
-  #poi-x { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--muted); font-size: 16px; padding: 4px; }
-
-  /* ---------- Sheets ---------- */
-  .sheet {
-    position: fixed; inset: 0; z-index: 940; background: rgba(244,237,224,.92);
-    backdrop-filter: blur(26px); -webkit-backdrop-filter: blur(26px);
-    display: none; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    padding: calc(18px + env(safe-area-inset-top)) 16px calc(90px + env(safe-area-inset-bottom));
-  }
-  .sheet.show { display: block; animation: fadein .25s ease; }
-  @keyframes fadein { from { opacity: 0; } }
-  .sheet h2 { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 24px; font-weight: 900; margin-bottom: 2px; }
-  .sheet h2 .jp { font-size: 15px; color: var(--accent); font-weight: 600; margin-left: 8px; }
-  .sheet .sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
-
-  .poi-card {
-    background: #fcf8f0; border: 1px solid var(--glass-border);
-    border-radius: 18px; padding: 15px 16px 15px 19px; margin-bottom: 10px; position: relative; overflow: hidden;
-    box-shadow: 0 3px 14px rgba(90,70,40,.08);
-  }
-  .poi-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--grad); }
-  .poi-card.passed { opacity: .5; }
-  .poi-card.passed::before { background: #b8ab92; }
-  .poi-card h3 { font-size: 15.5px; font-weight: 700; margin-bottom: 3px; }
-  .poi-card .meta { font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: .3px; margin-bottom: 6px; }
-  .poi-card p { font-size: 13px; color: #6b5f4d; line-height: 1.55; }
-  .poi-card .eta {
-    display: inline-block; margin-top: 9px; font-size: 12px; font-weight: 700; color: var(--accent);
-    background: var(--accent-soft); padding: 4px 11px; border-radius: 999px;
-  }
-
-  .quiz-q {
-    background: #fcf8f0; border: 1px solid var(--glass-border);
-    border-radius: 18px; padding: 16px; margin-bottom: 12px;
-    box-shadow: 0 3px 14px rgba(90,70,40,.08);
-  }
-  .quiz-q h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; line-height: 1.45; }
-  .quiz-q .opt {
-    display: block; width: 100%; text-align: left; margin-bottom: 7px;
-    background: rgba(60,45,30,.04); border: 1px solid var(--glass-border); color: var(--text);
-    padding: 11px 14px; border-radius: 13px; font-size: 14px; font-weight: 500; transition: all .15s;
-  }
-  .quiz-q .opt.correct { background: rgba(90,143,93,.13); border-color: var(--matcha); color: #3c6b3f; font-weight: 700; }
-  .quiz-q .opt.wrong { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-  .quiz-q .explain { font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.55; display: none; }
-  .quiz-q .explain.show { display: block; }
-  #quiz-score {
-    display: inline-block; font-family: "Zen Kaku Gothic New", sans-serif; font-size: 14px; font-weight: 700;
-    background: rgba(184,134,11,.12); color: var(--gold); border-radius: 999px; padding: 6px 16px; margin-bottom: 16px;
-  }
-
-  /* GPS-hjelp */
-  #gps-help {
-    position: fixed; z-index: 985; left: 12px; right: 12px; top: calc(148px + env(safe-area-inset-top));
-    padding: 14px 16px; display: none; font-size: 12.5px; line-height: 1.55; color: #55493a;
-  }
-  #gps-help.show { display: block; }
-  #gps-help b { color: var(--accent); }
-  #gps-retry {
-    margin-top: 10px; background: var(--grad); color: #fff; border: none;
-    font-size: 13px; font-weight: 700; padding: 9px 18px; border-radius: 12px;
-  }
-
-  .train-marker { font-size: 30px; filter: drop-shadow(0 3px 6px rgba(90,70,40,.5)); transform: scaleX(-1); }
-  .poi-pin {
-    width: 13px; height: 13px; border-radius: 50%;
-    background: var(--accent); border: 2.5px solid #fcf8f0;
-    box-shadow: 0 0 0 2px rgba(199,62,58,.35), 0 2px 8px rgba(199,62,58,.4);
-  }
-  .stn-label { color: #7d7160; font-size: 10px; font-weight: 700; white-space: nowrap; text-shadow: 0 1px 2px rgba(252,248,240,.9); }
+  footer { margin-top: 48px; font-size: 11.5px; color: var(--muted); text-align: center; line-height: 1.7; }
+  footer .jp { font-family: "Zen Kaku Gothic New", sans-serif; color: var(--accent); letter-spacing: 3px; }
 </style>
 </head>
 <body>
-<div id="map"></div>
+  <header>
+    <div class="logo">MilesTech <span>AS</span></div>
+    <div class="tagline"><b>Games</b> · for hele familien</div>
+  </header>
 
-<div id="hud">
-  <div id="speed-card" class="glass">
-    <div class="side-stat">
-      <div class="v" id="dist">0<em>km</em></div>
-      <div class="k">Tilbakelagt</div>
+  <main>
+    <a class="game" href="tracker/">
+      <div class="emoji">🚄</div>
+      <div>
+        <h2>Shinkansen</h2>
+        <p>Live-kart Tokyo → Hiroshima med fart, severdigheter på høyre side og quiz.</p>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="game" href="janiv/">
+      <div class="emoji">🃏</div>
+      <div>
+        <h2>Janiv</h2>
+        <p>Poengteller for kortspillet — med 50/100-regelen, kroner og graf.</p>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <div class="game soon">
+      <div class="emoji">🎲</div>
+      <div>
+        <h2>Neste spill</h2>
+        <p>Noe nytt er på vei …</p>
+      </div>
+      <div class="badge">Kommer snart</div>
     </div>
-    <div id="speed-center">
-      <div id="speed">0</div>
-      <div id="speed-unit">km/t</div>
-    </div>
-    <div class="side-stat right">
-      <div class="v" id="maxspeed">0<em>km/t</em></div>
-      <div class="k">Toppfart</div>
-    </div>
-  </div>
-  <div id="status-row" class="glass">
-    <div id="gps-pill"><div id="gps-dot" class="wait"></div><span id="gps-text">Kobler til GPS …</span></div>
-    <div id="next-info">Neste: <b id="ns-name">—</b> <span id="ns-eta"></span></div>
-    <button class="chip" id="demo-btn">DEMO</button>
-  </div>
-</div>
+  </main>
 
-<div id="gps-help" class="glass">
-  <b>Fikk ikke GPS-posisjon.</b> Sjekk at nettleseren har stedstilgang, og at siden er åpnet via <b>https://</b> eller localhost — GPS blokkeres ellers. På Mac uten GPS-brikke kan det ta tid; bruk DEMO for å teste.
-  <br><button id="gps-retry">Prøv igjen</button>
-</div>
-
-<div id="poi-toast" class="glass">
-  <button id="poi-x">✕</button>
-  <span class="badge">📸 HØYRE SIDE</span>
-  <h3 id="poi-title"></h3>
-  <p id="poi-desc"></p>
-  <div class="where" id="poi-where"></div>
-</div>
-
-<div id="progress-card" class="glass">
-  <div id="prog-head">
-    <div id="prog-title">Tokyo → Hiroshima<span class="jp">東京 → 広島</span></div>
-    <div id="prog-nums"><span id="prog-km">0</span><em> / <span id="prog-total">—</span> km · <span id="prog-pct">0</span>%</em></div>
-  </div>
-  <div id="prog-track">
-    <div id="prog-line"></div>
-    <div id="prog-fill"></div>
-    <div id="prog-dots"></div>
-    <div id="train-pos" style="left:0%">🚄</div>
-  </div>
-</div>
-
-<div class="sheet" id="sheet-sights">
-  <h2>Severdigheter<span class="jp">見どころ</span></h2>
-  <div class="sub">Alt på høyre side i kjøreretningen (vestover) — med live nedtelling</div>
-  <div id="sights-list"></div>
-</div>
-
-<div class="sheet" id="sheet-quiz">
-  <h2>Shinkansen-trivia<span class="jp">クイズ</span></h2>
-  <div class="sub">12 spørsmål — perfekt mellom tunnelene</div>
-  <div id="quiz-score" style="display:none"></div>
-  <div id="quiz-list"></div>
-</div>
-
-<div id="tabbar" class="glass">
-  <button data-tab="map" class="active"><span class="ico">🗾</span><span class="lbl">Kart</span></button>
-  <button data-tab="sights"><span class="ico">🏯</span><span class="lbl">Se</span></button>
-  <button data-tab="quiz"><span class="ico">🧠</span><span class="lbl">Quiz</span></button>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-"use strict";
-// ================= DATA =================
-const STATIONS = [
-  ["Tokyo", 35.681, 139.767, 1], ["Shinagawa", 35.630, 139.740, 0],
-  ["Shin-Yokohama", 35.507, 139.617, 0], ["Odawara", 35.256, 139.155, 0],
-  ["Atami", 35.104, 139.078, 0], ["Mishima", 35.126, 138.911, 0],
-  ["Shin-Fuji", 35.142, 138.663, 0], ["Shizuoka", 34.972, 138.389, 0],
-  ["Kakegawa", 34.769, 138.014, 0], ["Hamamatsu", 34.704, 137.735, 0],
-  ["Toyohashi", 34.763, 137.381, 0], ["Mikawa-Anjō", 34.969, 137.060, 0],
-  ["Nagoya", 35.171, 136.882, 1], ["Gifu-Hashima", 35.316, 136.686, 0],
-  ["Maibara", 35.314, 136.290, 0], ["Kyoto", 34.985, 135.758, 1],
-  ["Shin-Osaka", 34.733, 135.500, 1], ["Shin-Kobe", 34.706, 135.196, 0],
-  ["Nishi-Akashi", 34.667, 134.960, 0], ["Himeji", 34.830, 134.690, 0],
-  ["Aioi", 34.804, 134.468, 0], ["Okayama", 34.667, 133.916, 1],
-  ["Shin-Kurashiki", 34.578, 133.694, 0], ["Fukuyama", 34.490, 133.362, 0],
-  ["Shin-Onomichi", 34.428, 133.190, 0], ["Mihara", 34.398, 133.079, 0],
-  ["Higashi-Hiroshima", 34.406, 132.788, 0], ["Hiroshima", 34.398, 132.475, 1]
-];
-
-const POIS = [
-  { name: "Fuji-fjellet 🗻", lat: 35.361, lng: 138.727, trigger: [35.120, 138.960], radius: 10,
-    where: "Mellom Mishima og Shin-Fuji — Japans beste togutsikt",
-    desc: "Japans hellige fjell, 3776 m. Best utsikt i 8–10 min mellom Mishima og Shizuoka. Den perfekte kjegleformen kommer av at Fuji er en lagdelt stratovulkan — siste utbrudd i 1707 sendte aske helt til Edo (Tokyo). Kamera klart NÅ!" },
-  { name: "Lake Hamana 🌊", lat: 34.707, lng: 137.590, trigger: [34.700, 137.660], radius: 6,
-    where: "Rett vest for Hamamatsu — toget krysser sjøen på bro",
-    desc: "Brakkvannssjø kjent for åleoppdrett — Hamamatsu er Japans unagi-hovedstad. Sjøen var ferskvann til et jordskjelv i 1498 åpnet den mot havet. Du krysser den i 285 km/t." },
-  { name: "Kiyosu-borgen 🏯", lat: 35.222, lng: 136.843, trigger: [35.200, 136.860], radius: 4,
-    where: "2–3 min etter avgang fra Nagoya",
-    desc: "Oda Nobunagas hovedkvarter da han startet samlingen av Japan på 1500-tallet. Dukker opp brått på høyre side like etter Nagoya — lett å gå glipp av!" },
-  { name: "Ibuki-fjellet ⛰️", lat: 35.418, lng: 136.406, trigger: [35.310, 136.450], radius: 8,
-    where: "Ved Maibara, nordøst for Kyoto",
-    desc: "1377 m og verdensrekord i snødybde: 11,82 meter (1927)! I japansk mytologi møtte helten Yamato Takeru fjellguden her — det ble hans undergang." },
-  { name: "Biwa-sjøen 💧", lat: 35.330, lng: 136.170, trigger: [35.300, 136.280], radius: 6,
-    where: "Etter Maibara, før Kyoto",
-    desc: "Japans største innsjø, ~4 millioner år gammel — en av verdens eldste. Korte glimt på høyre side; den forsyner 14 millioner mennesker med drikkevann." },
-  { name: "Himeji-borgen 🏯", lat: 34.839, lng: 134.694, trigger: [34.828, 134.720], radius: 4,
-    where: "Rett ved Himeji stasjon — se nordover",
-    desc: "«Den hvite hegren» — Japans vakreste borg, UNESCO-verdensarv. Bygget 1601–1609, aldri ødelagt av krig eller jordskjelv. En brannbombe i 1945 landet i toppetasjen — uten å detonere." },
-  { name: "Fukuyama-borgen 🏯", lat: 34.492, lng: 133.361, trigger: [34.492, 133.390], radius: 3,
-    where: "Klistret inntil Fukuyama stasjon",
-    desc: "Japans borg nærmest en shinkansen-stasjon — ~50 meter fra perrongen! Bygget 1622. Nordveggen er kledd med jernplater, en sjeldenhet i japansk borgbygging." }
-];
-
-const QUIZ = [
-  { q: "Hvor lang er «nesen» på N700S-toget?", opts: ["4 meter", "10,7 meter", "15 meter"], a: 2,
-    ex: "Ca. 15 m — den hindrer «tunnelsmell», drønnet som oppstår når toget presser luft gjennom trange tunneler." },
-  { q: "Hva betyr «Nozomi»?", opts: ["Håp", "Lyn", "Pil"], a: 0,
-    ex: "Nozomi = «håp». De andre heter Hikari («lys») og Kodama («ekko»)." },
-  { q: "Gjennomsnittsforsinkelse for shinkansen per år?", opts: ["Under 1 minutt", "Ca. 5 minutter", "Ca. 12 minutter"], a: 0,
-    ex: "Under ett minutt — inkludert tyfoner og jordskjelv. Konduktøren beklager offentlig ved over 1 min." },
-  { q: "Når åpnet Tōkaidō-linjen (den du kjører på)?", opts: ["1954", "1964", "1974"], a: 1,
-    ex: "1. oktober 1964, ni dager før Tokyo-OL. Verdens første høyhastighetsbane — aldri en dødsulykke fra avsporing/kollisjon." },
-  { q: "Hvor raskt rengjøres et helt tog i Tokyo?", opts: ["7 minutter", "20 minutter", "45 minutter"], a: 0,
-    ex: "7 minutter! Teamene bukker til toget. Harvard har laget case-studie av «shinkansen-teateret»." },
-  { q: "Hva gjør toget automatisk ved jordskjelv?", opts: ["Senker farten til 100", "Nødbremser FØR skjelvbølgen treffer", "Ingenting"], a: 1,
-    ex: "UrEDAS fanger de raske P-bølgene og bremser toget sekunder før de kraftige S-bølgene ankommer." },
-  { q: "Antall passasjerer på Tōkaidō-linjen siden 1964?", opts: ["1 milliard", "3 milliarder", "Over 6 milliarder"], a: 2,
-    ex: "Over 6,4 milliarder — nesten hele jordas befolkning. Null passasjerdødsfall fra togdrift." },
-  { q: "Hvorfor er vinduene mindre på nyere shinkansen?", opts: ["Mot steinsprut", "Styrke og aerodynamikk", "Strømsparing"], a: 1,
-    ex: "Mindre vinduer gir stivere og lettere karosseri — viktig ved 285 km/t og trykkendringer i tunneler." },
-  { q: "Fuji-fjellets siste utbrudd?", opts: ["1707", "1854", "1923"], a: 0,
-    ex: "Hōei-utbruddet 1707. Fuji er fortsatt aktiv — asken la seg 4 cm tykt over Edo, 100 km unna." },
-  { q: "Hva er spesielt med «ekiben»?", opts: ["Alltid varm", "Hver stasjon har sin lokale spesialitet", "Gratis med billetten"], a: 1,
-    ex: "Over 2000 varianter i Japan — Nagoya: miso-katsu, Hiroshima: anago (sjøål)-bento." },
-  { q: "Hvordan holder N700S 285 km/t i svinger?", opts: ["Den bremser", "Bredere spor", "Krenger med luftfjæring"], a: 2,
-    ex: "Luftfjæringen krenger toget ~1,5° i kurvene, så farten kan holdes der eldre tog måtte bremse." },
-  { q: "Mister du lommeboka i Japan …", opts: ["… er den borte", "… får du den trolig tilbake (~90 %)", "… må du i avhør"], a: 1,
-    ex: "Japans hittegods-system er legendarisk — ca. 90 % av mistede lommebøker leveres tilbake, ofte med alt intakt." }
-];
-
-// ================= GEOMETRI =================
-const R_EARTH = 6371;
-function hav(a, b, c, d) {
-  const t = Math.PI / 180, dLat = (c - a) * t, dLng = (d - b) * t;
-  const h = Math.sin(dLat/2)**2 + Math.cos(a*t) * Math.cos(c*t) * Math.sin(dLng/2)**2;
-  return 2 * R_EARTH * Math.asin(Math.sqrt(h));
-}
-
-const cum = [0];
-for (let i = 1; i < STATIONS.length; i++)
-  cum.push(cum[i-1] + hav(STATIONS[i-1][1], STATIONS[i-1][2], STATIONS[i][1], STATIONS[i][2]));
-const TOTAL = cum[cum.length - 1];
-
-function projectOnRoute(lat, lng) {
-  let best = { km: 0, lat: STATIONS[0][1], lng: STATIONS[0][2], off: Infinity };
-  const t = Math.PI / 180, cosLat = Math.cos(lat * t);
-  for (let i = 0; i < STATIONS.length - 1; i++) {
-    const ax = STATIONS[i][2] * cosLat, ay = STATIONS[i][1];
-    const bx = STATIONS[i+1][2] * cosLat, by = STATIONS[i+1][1];
-    const px = lng * cosLat, py = lat;
-    const dx = bx - ax, dy = by - ay;
-    const len2 = dx*dx + dy*dy;
-    let u = len2 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
-    u = Math.max(0, Math.min(1, u));
-    const qLat = STATIONS[i][1] + (STATIONS[i+1][1] - STATIONS[i][1]) * u;
-    const qLng = STATIONS[i][2] + (STATIONS[i+1][2] - STATIONS[i][2]) * u;
-    const off = hav(lat, lng, qLat, qLng);
-    if (off < best.off) best = { km: cum[i] + (cum[i+1] - cum[i]) * u, lat: qLat, lng: qLng, off };
-  }
-  return best;
-}
-function pointAtKm(km) {
-  km = Math.max(0, Math.min(TOTAL, km));
-  for (let i = 0; i < cum.length - 1; i++) {
-    if (km <= cum[i+1]) {
-      const u = (km - cum[i]) / (cum[i+1] - cum[i] || 1);
-      return [STATIONS[i][1] + (STATIONS[i+1][1] - STATIONS[i][1]) * u,
-              STATIONS[i][2] + (STATIONS[i+1][2] - STATIONS[i][2]) * u, i];
-    }
-  }
-  return [STATIONS.at(-1)[1], STATIONS.at(-1)[2], STATIONS.length - 2];
-}
-POIS.forEach(p => p.routeKm = projectOnRoute(p.trigger[0], p.trigger[1]).km);
-
-// ================= KART =================
-const map = L.map('map', { zoomControl: false, attributionControl: true })
-  .setView([35.1, 136.6], 7);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '© OSM © CARTO', maxZoom: 19, className: 'base-tiles'
-}).addTo(map);
-
-const routeAll = STATIONS.map(s => [s[1], s[2]]);
-L.polyline(routeAll, { color: '#8a7f6d', weight: 4, opacity: .28, dashArray: '1 7' }).addTo(map);
-const doneGlow = L.polyline([], { color: '#c73e3a', weight: 10, opacity: .14 }).addTo(map);
-const doneLine = L.polyline([], { color: '#c73e3a', weight: 3.5, opacity: .95 }).addTo(map);
-
-STATIONS.forEach(s => {
-  L.circleMarker([s[1], s[2]], {
-    radius: s[3] ? 5.5 : 3.5, color: s[3] ? '#c73e3a' : '#8a7f6d',
-    fillColor: '#fcf8f0', fillOpacity: 1, weight: 2
-  }).addTo(map).bindPopup(`<b>${s[0]}</b>`);
-  if (s[3]) L.marker([s[1], s[2]], {
-    icon: L.divIcon({ className: '', html: `<div class="stn-label">${s[0]}</div>`, iconAnchor: [-8, -4] }),
-    interactive: false
-  }).addTo(map);
-});
-POIS.forEach(p => {
-  L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', html: '<div class="poi-pin"></div>', iconSize: [13,13], iconAnchor: [6,6] }) })
-    .addTo(map).bindPopup(`<b>${p.name}</b><br><small>${p.where}</small>`);
-});
-
-const trainMarker = L.marker(routeAll[0], {
-  icon: L.divIcon({ className: '', html: '<div class="train-marker">🚄</div>', iconSize: [34,34], iconAnchor: [17,17] }),
-  zIndexOffset: 1000
-}).addTo(map);
-
-// ================= FREMDRIFTSLINJE =================
-const dotsEl = document.getElementById('prog-dots');
-STATIONS.forEach((s, i) => {
-  const d = document.createElement('div');
-  d.className = 'prog-dot' + (s[3] ? ' major' : '');
-  d.style.left = (cum[i] / TOTAL * 100) + '%';
-  if (s[3]) d.innerHTML = `<div class="tip">${s[0].replace('Shin-', '')}</div>`;
-  d.dataset.km = cum[i];
-  dotsEl.appendChild(d);
-});
-document.getElementById('prog-total').textContent = Math.round(TOTAL);
-
-// ================= TILSTAND =================
-let maxSpeed = 0, lastFix = null, followMode = true, curKm = 0;
-const shownPois = new Set();
-map.on('dragstart', () => followMode = false);
-
-function fmtSpeed(kmh) { return Math.max(0, Math.round(kmh)); }
-
-function updatePosition(lat, lng, speedMs) {
-  const now = Date.now();
-  let kmh = 0;
-  if (speedMs != null && !isNaN(speedMs) && speedMs >= 0) kmh = speedMs * 3.6;
-  else if (lastFix) {
-    const d = hav(lastFix.lat, lastFix.lng, lat, lng);
-    const h = (now - lastFix.t) / 3600000;
-    if (h > 0 && d < 5) kmh = d / h;
-  }
-  lastFix = { lat, lng, t: now };
-  if (kmh > maxSpeed && kmh < 400) maxSpeed = kmh;
-
-  const proj = projectOnRoute(lat, lng);
-  curKm = proj.km;
-  const pct = curKm / TOTAL * 100;
-
-  document.getElementById('speed').textContent = fmtSpeed(kmh);
-  document.getElementById('dist').innerHTML = curKm.toFixed(0) + '<em>km</em>';
-  document.getElementById('maxspeed').innerHTML = fmtSpeed(maxSpeed) + '<em>km/t</em>';
-  document.getElementById('prog-km').textContent = curKm.toFixed(0);
-  document.getElementById('prog-pct').textContent = pct.toFixed(0);
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('train-pos').style.left = pct + '%';
-  document.querySelectorAll('.prog-dot').forEach(d => d.classList.toggle('passed', +d.dataset.km <= curKm + 0.5));
-
-  const donePts = [];
-  for (let i = 0; i < STATIONS.length && cum[i] <= curKm; i++) donePts.push(routeAll[i]);
-  const tip = pointAtKm(curKm);
-  donePts.push([tip[0], tip[1]]);
-  doneLine.setLatLngs(donePts);
-  doneGlow.setLatLngs(donePts);
-
-  trainMarker.setLatLng([lat, lng]);
-  if (followMode) map.setView([lat, lng], Math.max(map.getZoom(), 10), { animate: true, duration: .5 });
-
-  let ni = STATIONS.findIndex((s, i) => cum[i] > curKm + 0.3);
-  if (ni === -1) {
-    document.getElementById('ns-name').textContent = 'Hiroshima 🎉';
-    document.getElementById('ns-eta').textContent = '';
-  } else {
-    const dKm = cum[ni] - curKm;
-    let eta = '';
-    if (kmh > 40) eta = `· ${Math.max(1, Math.round(dKm / kmh * 60))} min`;
-    document.getElementById('ns-name').textContent = STATIONS[ni][0];
-    document.getElementById('ns-eta').textContent = `${dKm.toFixed(0)} km ${eta}`;
-  }
-
-  POIS.forEach((p, i) => {
-    if (!shownPois.has(i) && curKm >= p.routeKm - Math.max(3, p.radius) && curKm < p.routeKm + p.radius) {
-      shownPois.add(i);
-      showToast(p);
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-    }
-  });
-  renderSights(kmh);
-}
-
-function showToast(p) {
-  document.getElementById('poi-title').textContent = p.name;
-  document.getElementById('poi-desc').textContent = p.desc;
-  document.getElementById('poi-where').textContent = p.where;
-  document.getElementById('poi-toast').classList.add('show');
-  clearTimeout(showToast.t);
-  showToast.t = setTimeout(() => document.getElementById('poi-toast').classList.remove('show'), 45000);
-}
-document.getElementById('poi-x').onclick = () => document.getElementById('poi-toast').classList.remove('show');
-
-// ================= SEVERDIGHETER =================
-function renderSights(kmh) {
-  document.getElementById('sights-list').innerHTML = POIS.map((p, i) => {
-    const dKm = p.routeKm - curKm;
-    if (dKm < -p.radius) return `<div class="poi-card passed"><h3>${p.name}</h3><div class="meta">✓ Passert</div><p>${p.desc}</p></div>`;
-    let eta;
-    if (lastFix && kmh > 40 && dKm > 0) eta = `📸 om ~${Math.max(1, Math.round(dKm / kmh * 60))} min · ${dKm.toFixed(0)} km`;
-    else if (lastFix) eta = `${Math.abs(dKm).toFixed(0)} km unna`;
-    else eta = `${p.routeKm.toFixed(0)} km fra Tokyo`;
-    return `<div class="poi-card"><h3>${p.name}</h3><div class="meta">${p.where}</div><p>${p.desc}</p><span class="eta">${eta} · høyre side</span></div>`;
-  }).join('');
-}
-renderSights(0);
-
-// ================= QUIZ =================
-let score = 0, answered = 0;
-document.getElementById('quiz-list').innerHTML = QUIZ.map((q, qi) => `
-  <div class="quiz-q" data-q="${qi}">
-    <h3>${qi + 1}. ${q.q}</h3>
-    ${q.opts.map((o, oi) => `<button class="opt" data-o="${oi}">${o}</button>`).join('')}
-    <div class="explain">${q.ex}</div>
-  </div>`).join('');
-document.querySelectorAll('.quiz-q').forEach(el => {
-  const qi = +el.dataset.q;
-  el.querySelectorAll('.opt').forEach(btn => {
-    btn.onclick = () => {
-      if (el.dataset.done) return;
-      el.dataset.done = "1";
-      answered++;
-      if (+btn.dataset.o === QUIZ[qi].a) { btn.classList.add('correct'); score++; }
-      else { btn.classList.add('wrong'); el.querySelectorAll('.opt')[QUIZ[qi].a].classList.add('correct'); }
-      el.querySelector('.explain').classList.add('show');
-      const sc = document.getElementById('quiz-score');
-      sc.style.display = 'inline-block';
-      sc.textContent = `⭐ ${score} / ${answered} riktige`;
-    };
-  });
-});
-
-// ================= TABS =================
-document.querySelectorAll('#tabbar button').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('#tabbar button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('sheet-sights').classList.toggle('show', btn.dataset.tab === 'sights');
-    document.getElementById('sheet-quiz').classList.toggle('show', btn.dataset.tab === 'quiz');
-    if (btn.dataset.tab === 'map') { followMode = true; setTimeout(() => map.invalidateSize(), 100); }
-  };
-});
-
-// ================= GPS =================
-const gpsDot = document.getElementById('gps-dot');
-const gpsText = document.getElementById('gps-text');
-let watchId = null, gotFix = false;
-
-function setGps(state, msg) {
-  gpsDot.className = state;
-  gpsText.textContent = msg;
-}
-function startGps() {
-  document.getElementById('gps-help').classList.remove('show');
-  if (watchId != null) navigator.geolocation.clearWatch(watchId);
-  if (!('geolocation' in navigator)) { setGps('', 'GPS ikke støttet'); return; }
-  if (!window.isSecureContext && location.protocol !== 'file:') {
-    setGps('', 'Krever https://');
-    document.getElementById('gps-help').classList.add('show');
-    return;
-  }
-  setGps('wait', 'Søker etter GPS …');
-  watchId = navigator.geolocation.watchPosition(pos => {
-    if (demoOn) return;
-    gotFix = true;
-    setGps('ok', `GPS · ±${Math.round(pos.coords.accuracy)} m`);
-    updatePosition(pos.coords.latitude, pos.coords.longitude, pos.coords.speed);
-  }, err => {
-    if (demoOn) return;
-    const msgs = { 1: 'Stedstilgang avslått', 2: 'Posisjon utilgjengelig', 3: 'Tidsavbrudd — prøver videre …' };
-    setGps(err.code === 3 && gotFix ? 'wait' : '', msgs[err.code] || err.message);
-    if (err.code !== 3) document.getElementById('gps-help').classList.add('show');
-  }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 60000 });
-}
-document.getElementById('gps-retry').onclick = startGps;
-startGps();
-
-// ================= DEMO =================
-let demoOn = false, demoTimer = null, demoKm = 0;
-document.getElementById('demo-btn').onclick = () => {
-  demoOn = !demoOn;
-  document.getElementById('demo-btn').classList.toggle('on', demoOn);
-  if (demoOn) {
-    maxSpeed = 0; lastFix = null; shownPois.clear(); demoKm = 0;
-    setGps('ok', 'DEMO — simulerer 285 km/t');
-    demoTimer = setInterval(() => {
-      demoKm += TOTAL / 240;
-      if (demoKm >= TOTAL) { demoKm = TOTAL; clearInterval(demoTimer); }
-      const [la, ln] = pointAtKm(demoKm);
-      updatePosition(la, ln, 285 / 3.6);
-    }, 300);
-  } else {
-    clearInterval(demoTimer);
-    startGps();
-  }
-};
-</script>
+  <footer>
+    <span class="jp">ミレステック</span><br>
+    © MilesTech AS
+  </footer>
 </body>
 </html>
