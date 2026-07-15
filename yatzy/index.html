@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4ede0">
+<title>Yatzy · MilesTech Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4ede0; --card: #fcf8f0; --border: rgba(60,45,30,.12);
+    --text: #27221b; --muted: #8a7f6d; --accent: #c73e3a; --indigo: #33506b;
+    --matcha: #5a8f5d; --gold: #b8860b;
+    --grad: linear-gradient(135deg, #c73e3a, #e0632e);
+    --shadow: 0 8px 30px rgba(90,70,40,.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, sans-serif;
+    padding: calc(16px + env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom)); }
+  button { font-family: inherit; cursor: pointer; }
+  h1 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 28px; text-align: center; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { text-align: center; font-size: 12.5px; color: var(--muted); margin: 4px 0 18px; }
+  a.back { position: absolute; top: calc(18px + env(safe-area-inset-top)); left: 14px; text-decoration: none;
+    color: var(--muted); font-size: 13px; font-weight: 600; }
+
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  /* -------- setup -------- */
+  #setup { max-width: 420px; margin: 0 auto; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .panel h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-bottom: 12px; }
+  .mode-row { display: flex; gap: 8px; }
+  .mode-btn { flex: 1; padding: 13px 8px; border-radius: 14px; border: 2px solid var(--border);
+    background: none; font-size: 14px; font-weight: 700; color: var(--muted); transition: all .15s; }
+  .mode-btn small { display: block; font-size: 10.5px; font-weight: 500; margin-top: 3px; }
+  .mode-btn.sel { border-color: var(--accent); color: var(--accent); background: rgba(199,62,58,.06); }
+  .name-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .name-row input { flex: 1; border: 1px solid var(--border); background: rgba(60,45,30,.03);
+    border-radius: 12px; padding: 11px 14px; font-size: 15px; font-family: inherit; outline: none; color: var(--text); }
+  .name-row input:focus { border-color: var(--accent); }
+  .name-row button { width: 46px; border-radius: 12px; border: none; background: var(--grad);
+    color: #fff; font-size: 22px; font-weight: 700; }
+  .plist { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ptag { display: flex; align-items: center; gap: 6px; background: rgba(51,80,107,.08);
+    color: var(--indigo); font-size: 13px; font-weight: 700; padding: 7px 8px 7px 13px; border-radius: 999px; }
+  .ptag button { background: none; border: none; color: var(--indigo); opacity: .6; font-size: 15px; padding: 0 4px; }
+  #start-btn { width: 100%; padding: 15px; border: none; border-radius: 16px; background: var(--grad);
+    color: #fff; font-size: 16px; font-weight: 800; box-shadow: var(--shadow); }
+  #start-btn:disabled { opacity: .4; }
+
+  /* -------- board -------- */
+  #board { display: none; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
+  .toolbar .mode-pill { font-size: 11px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+    color: var(--accent); background: rgba(199,62,58,.08); padding: 5px 12px; border-radius: 999px; }
+  .toolbar button { background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+
+  .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--card);
+    border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; min-width: 320px; }
+  th, td { border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { padding: 10px 8px; font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 13px; }
+  thead th { position: sticky; top: 0; background: var(--card); }
+  thead th.leader { color: var(--gold); }
+  td.cat { padding: 9px 10px; font-weight: 600; white-space: nowrap; position: sticky; left: 0;
+    background: var(--card); min-width: 108px; }
+  td.cat small { color: var(--muted); font-weight: 500; font-size: 10.5px; display: block; }
+  td.cell { text-align: center; min-width: 52px; padding: 4px; font-variant-numeric: tabular-nums; }
+  .cellbtn { width: 100%; min-height: 36px; border-radius: 10px; border: 1.5px dashed var(--border);
+    background: none; font-size: 14px; font-weight: 700; color: var(--muted); }
+  .cellbtn.open { border-color: var(--accent); color: var(--accent); background: rgba(199,62,58,.05); }
+  .cellbtn.locked { border-style: solid; border-color: transparent; color: #cfc4ae; font-size: 16px; }
+  .cellbtn.filled { border-style: solid; border-color: transparent; background: rgba(51,80,107,.07);
+    color: var(--indigo); font-size: 15px; }
+  .cellbtn.struck { border-style: solid; border-color: transparent; background: rgba(60,45,30,.05);
+    color: var(--muted); text-decoration: line-through; }
+  tr.sumrow td { background: rgba(184,134,11,.07); font-weight: 800; padding: 9px 10px; }
+  tr.sumrow td.cat { background: #f6ecd7; }
+  tr.totalrow td { background: rgba(199,62,58,.08); font-weight: 900; font-size: 15px; padding: 11px 10px;
+    border-bottom: none; }
+  tr.totalrow td.cat { background: #f4e0d8; font-family: "Zen Kaku Gothic New", sans-serif; }
+  .bonus-hit { color: var(--matcha); }
+  .bonus-miss { color: var(--muted); font-size: 10.5px; font-weight: 600; }
+  .crown { font-size: 13px; }
+
+  /* -------- picker -------- */
+  #overlay { position: fixed; inset: 0; background: rgba(39,34,27,.4); z-index: 90; display: none; }
+  #picker { position: fixed; left: 0; right: 0; bottom: 0; z-index: 100; display: none;
+    background: var(--card); border-radius: 24px 24px 0 0; box-shadow: 0 -10px 40px rgba(90,70,40,.3);
+    padding: 20px 18px calc(24px + env(safe-area-inset-bottom)); max-height: 70vh; overflow-y: auto; }
+  #picker.show, #overlay.show { display: block; }
+  #picker h3 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 18px; }
+  #picker .for { font-size: 12.5px; color: var(--muted); margin: 2px 0 14px; }
+  #picker .for b { color: var(--accent); }
+  .vals { display: flex; flex-wrap: wrap; gap: 8px; }
+  .val { min-width: 52px; padding: 12px 10px; border-radius: 13px; border: 1.5px solid var(--border);
+    background: none; font-size: 16px; font-weight: 800; color: var(--indigo); }
+  .val:active { background: rgba(51,80,107,.1); }
+  .val.strike { color: var(--accent); border-color: rgba(199,62,58,.3); }
+  .val.undo { color: var(--muted); font-size: 13px; font-weight: 700; }
+</style>
+</head>
+<body>
+<a class="back" href="../">← Games</a>
+<h1>Yatzy <span>🎲</span></h1>
+<div class="sub">Digital blokk · automatisk summering · bonusvarsel</div>
+
+<div id="setup">
+  <div class="panel">
+    <h2>Variant</h2>
+    <div class="mode-row">
+      <button class="mode-btn sel" id="mode-bound">Klassisk (bunden)<small>Fyll ut ovenfra og ned</small></button>
+      <button class="mode-btn" id="mode-free">Fri<small>Velg rad selv hver runde</small></button>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Spillere</h2>
+    <div class="name-row">
+      <input id="pname" placeholder="Navn …" maxlength="14" autocomplete="off">
+      <button id="padd">+</button>
+    </div>
+    <div class="plist" id="plist"></div>
+  </div>
+  <button id="start-btn" disabled>Start spillet</button>
+</div>
+
+<div id="board">
+  <div class="wrap">
+    <div class="toolbar">
+      <span class="mode-pill" id="mode-pill"></span>
+      <button id="new-game">Nytt spill</button>
+    </div>
+    <div class="tablewrap"><table id="tbl"></table></div>
+  </div>
+</div>
+
+<div id="overlay"></div>
+<div id="picker">
+  <h3 id="pk-cat"></h3>
+  <div class="for">Poeng for <b id="pk-player"></b></div>
+  <div class="vals" id="pk-vals"></div>
+</div>
+
+<script>
+"use strict";
+/* ---------- kategorier med gyldige verdier ---------- */
+function range(a, b, step) { const r = []; for (let v = a; v <= b; v += step) r.push(v); return r; }
+function husValues() { // 3 like av a + 2 like av b, a ≠ b
+  const s = new Set();
+  for (let a = 1; a <= 6; a++) for (let b = 1; b <= 6; b++) if (a !== b) s.add(3*a + 2*b);
+  return [...s].sort((x, y) => x - y);
+}
+function toPairValues() { // to ulike par
+  const s = new Set();
+  for (let a = 1; a <= 6; a++) for (let b = a + 1; b <= 6; b++) s.add(2*a + 2*b);
+  return [...s].sort((x, y) => x - y);
+}
+const CATS = [
+  { id: "n1", name: "Enere",   hint: "kun 1-ere teller",  upper: 1, vals: range(0, 5, 1) },
+  { id: "n2", name: "Toere",   hint: "kun 2-ere teller",  upper: 2, vals: range(0, 10, 2) },
+  { id: "n3", name: "Treere",  hint: "kun 3-ere teller",  upper: 3, vals: range(0, 15, 3) },
+  { id: "n4", name: "Firere",  hint: "kun 4-ere teller",  upper: 4, vals: range(0, 20, 4) },
+  { id: "n5", name: "Femmere", hint: "kun 5-ere teller",  upper: 5, vals: range(0, 25, 5) },
+  { id: "n6", name: "Seksere", hint: "kun 6-ere teller",  upper: 6, vals: range(0, 30, 6) },
+  { id: "pair",  name: "Ett par",        hint: "to like",             vals: range(2, 12, 2) },
+  { id: "twop",  name: "To par",         hint: "to ulike par",        vals: toPairValues() },
+  { id: "three", name: "Tre like",       hint: "",                    vals: range(3, 18, 3) },
+  { id: "four",  name: "Fire like",      hint: "",                    vals: range(4, 24, 4) },
+  { id: "smstr", name: "Liten straight", hint: "1-2-3-4-5 = 15",      vals: [15] },
+  { id: "lgstr", name: "Stor straight",  hint: "2-3-4-5-6 = 20",      vals: [20] },
+  { id: "hus",   name: "Hus",            hint: "tre like + to like",  vals: husValues() },
+  { id: "chance", name: "Sjanse",        hint: "sum av alle terninger", vals: range(5, 30, 1) },
+  { id: "yatzy", name: "Yatzy",          hint: "fem like: 50 + øyne", vals: [51, 52, 53, 54, 55, 56] }
+];
+const UPPER_IDS = CATS.filter(c => c.upper).map(c => c.id);
+const ORDER = CATS.map(c => c.id);
+const BONUS_LIMIT = 63, BONUS = 50;
+
+/* ---------- tilstand ---------- */
+const LS_KEY = "yatzy-v1";
+let state = null; // { mode: 'bound'|'free', players: [{name, scores: {catId: number|'X'}}] }
+
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if (s && s.players && s.players.length) return s; }
+  catch (e) {}
+  return null;
+}
+
+/* ---------- beregninger ---------- */
+function upperSum(p) { return UPPER_IDS.reduce((s, id) => s + (typeof p.scores[id] === "number" ? p.scores[id] : 0), 0); }
+function hasBonus(p) { return upperSum(p) >= BONUS_LIMIT; }
+function total(p) {
+  const all = ORDER.reduce((s, id) => s + (typeof p.scores[id] === "number" ? p.scores[id] : 0), 0);
+  return all + (hasBonus(p) ? BONUS : 0);
+}
+function filledCount(p) { return ORDER.filter(id => p.scores[id] !== undefined).length; }
+function nextBoundCat(p) { return ORDER.find(id => p.scores[id] === undefined); }
+function gameOver() { return state.players.every(p => filledCount(p) === ORDER.length); }
+function leaderIdx() {
+  let best = -1, bi = -1;
+  state.players.forEach((p, i) => { const t = total(p); if (t > best) { best = t; bi = i; } });
+  return state.players.filter(p => filledCount(p) > 0).length ? bi : -1;
+}
+
+/* ---------- setup-UI ---------- */
+let mode = "bound";
+const names = [];
+const $ = id => document.getElementById(id);
+
+$("mode-bound").onclick = () => { mode = "bound"; $("mode-bound").classList.add("sel"); $("mode-free").classList.remove("sel"); };
+$("mode-free").onclick = () => { mode = "free"; $("mode-free").classList.add("sel"); $("mode-bound").classList.remove("sel"); };
+
+function renderNames() {
+  $("plist").innerHTML = names.map((n, i) =>
+    `<span class="ptag">${n}<button data-i="${i}">✕</button></span>`).join("");
+  $("plist").querySelectorAll("button").forEach(b => b.onclick = () => { names.splice(+b.dataset.i, 1); renderNames(); });
+  $("start-btn").disabled = names.length === 0;
+}
+function addName() {
+  const n = $("pname").value.trim();
+  if (!n || names.length >= 8) return;
+  names.push(n); $("pname").value = ""; renderNames(); $("pname").focus();
+}
+$("padd").onclick = addName;
+$("pname").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
+
+$("start-btn").onclick = () => {
+  state = { mode, players: names.map(n => ({ name: n, scores: {} })) };
+  save(); showBoard();
+};
+
+/* ---------- brett-UI ---------- */
+function showBoard() {
+  $("setup").style.display = "none";
+  $("board").style.display = "block";
+  $("mode-pill").textContent = state.mode === "bound" ? "Klassisk · bunden" : "Fri rekkefølge";
+  renderBoard();
+}
+
+function cellButton(p, pi, cat) {
+  const v = p.scores[cat.id];
+  if (v === "X") return `<button class="cellbtn struck" data-p="${pi}" data-c="${cat.id}">0</button>`;
+  if (typeof v === "number") return `<button class="cellbtn filled" data-p="${pi}" data-c="${cat.id}">${v}</button>`;
+  if (state.mode === "bound" && nextBoundCat(p) !== cat.id)
+    return `<button class="cellbtn locked" disabled>·</button>`;
+  return `<button class="cellbtn open" data-p="${pi}" data-c="${cat.id}">＋</button>`;
+}
+
+function renderBoard() {
+  const ps = state.players;
+  const li = gameOver() || ps.some(p => filledCount(p) > 2) ? leaderIdx() : -1;
+  let h = "<thead><tr><th style='text-align:left;padding-left:12px'>Kategori</th>";
+  ps.forEach((p, i) => {
+    h += `<th class="${i === li ? "leader" : ""}">${i === li ? '<span class="crown">👑</span> ' : ""}${p.name}</th>`;
+  });
+  h += "</tr></thead><tbody>";
+
+  CATS.forEach(cat => {
+    h += `<tr><td class="cat">${cat.name}${cat.hint ? `<small>${cat.hint}</small>` : ""}</td>`;
+    ps.forEach((p, pi) => h += `<td class="cell">${cellButton(p, pi, cat)}</td>`);
+    h += "</tr>";
+    if (cat.id === "n6") {
+      h += `<tr class="sumrow"><td class="cat">Sum <small>bonus ved ${BONUS_LIMIT}+</small></td>`;
+      ps.forEach(p => {
+        const s = upperSum(p);
+        const upDone = UPPER_IDS.every(id => p.scores[id] !== undefined);
+        let note;
+        if (hasBonus(p)) note = `<div class="bonus-hit">✓ Bonus +${BONUS}</div>`;
+        else if (upDone) note = `<div class="bonus-miss">ingen bonus</div>`;
+        else note = `<div class="bonus-miss">${BONUS_LIMIT - s} unna bonus</div>`;
+        h += `<td class="cell">${s}${note}</td>`;
+      });
+      h += "</tr>";
+    }
+  });
+
+  h += `<tr class="totalrow"><td class="cat">TOTALT</td>`;
+  ps.forEach(p => h += `<td class="cell">${total(p)}</td>`);
+  h += "</tr></tbody>";
+  $("tbl").innerHTML = h;
+
+  $("tbl").querySelectorAll(".cellbtn[data-p]").forEach(b => b.onclick = () => openPicker(+b.dataset.p, b.dataset.c));
+
+  if (gameOver()) {
+    const w = state.players[leaderIdx()];
+    setTimeout(() => alert(`🏆 ${w.name} vinner med ${total(w)} poeng!`), 150);
+  }
+}
+
+/* ---------- picker ---------- */
+let pkP = null, pkC = null;
+function openPicker(pi, catId) {
+  pkP = pi; pkC = catId;
+  const cat = CATS.find(c => c.id === catId);
+  const p = state.players[pi];
+  $("pk-cat").textContent = cat.name;
+  $("pk-player").textContent = p.name;
+  let h = cat.vals.map(v => `<button class="val" data-v="${v}">${v}</button>`).join("");
+  h += `<button class="val strike" data-v="X">Stryk ✕</button>`;
+  if (p.scores[catId] !== undefined) h += `<button class="val undo" data-v="UNDO">Angre ↩</button>`;
+  $("pk-vals").innerHTML = h;
+  $("pk-vals").querySelectorAll(".val").forEach(b => b.onclick = () => pick(b.dataset.v));
+  $("picker").classList.add("show"); $("overlay").classList.add("show");
+}
+function closePicker() { $("picker").classList.remove("show"); $("overlay").classList.remove("show"); }
+$("overlay").onclick = closePicker;
+
+function pick(v) {
+  const p = state.players[pkP];
+  if (v === "UNDO") delete p.scores[pkC];
+  else if (v === "X") p.scores[pkC] = "X";
+  else p.scores[pkC] = +v;
+  save(); closePicker(); renderBoard();
+}
+
+/* ---------- nytt spill ---------- */
+$("new-game").onclick = () => {
+  if (!confirm("Starte nytt spill? Nåværende blokk slettes.")) return;
+  localStorage.removeItem(LS_KEY);
+  state = null;
+  $("board").style.display = "none";
+  $("setup").style.display = "block";
+};
+
+/* ---------- init ---------- */
+const saved = load();
+if (saved) { state = saved; showBoard(); }
+</script>
+</body>
+</html>
