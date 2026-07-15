@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4ede0">
+<title>Rakko · MilesTech Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4ede0; --card: #fcf8f0; --border: rgba(60,45,30,.12);
+    --text: #27221b; --muted: #8a7f6d; --accent: #c73e3a; --indigo: #33506b;
+    --matcha: #5a8f5d; --gold: #b8860b;
+    --grad: linear-gradient(135deg, #c73e3a, #e0632e);
+    --shadow: 0 8px 30px rgba(90,70,40,.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center;
+    padding: calc(16px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom)); }
+  button { font-family: inherit; cursor: pointer; }
+  h1 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 28px; text-align: center; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { text-align: center; font-size: 12.5px; color: var(--muted); margin: 4px 0 16px; }
+  a.back { position: absolute; top: calc(18px + env(safe-area-inset-top)); left: 14px; text-decoration: none;
+    color: var(--muted); font-size: 13px; font-weight: 600; }
+
+  .screen { width: 100%; max-width: 420px; display: none; }
+  .screen.show { display: block; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .panel h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-bottom: 12px; }
+  .name-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .name-row input { flex: 1; border: 1px solid var(--border); background: rgba(60,45,30,.03);
+    border-radius: 12px; padding: 11px 14px; font-size: 15px; font-family: inherit; outline: none; color: var(--text); }
+  .name-row input:focus { border-color: var(--accent); }
+  .name-row button { width: 46px; border-radius: 12px; border: none; background: var(--grad); color: #fff; font-size: 22px; }
+  .plist { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ptag { display: flex; align-items: center; gap: 6px; background: rgba(51,80,107,.08);
+    color: var(--indigo); font-size: 13px; font-weight: 700; padding: 7px 8px 7px 13px; border-radius: 999px; }
+  .ptag button { background: none; border: none; color: var(--indigo); opacity: .6; font-size: 15px; padding: 0 4px; }
+  .opt-row { display: flex; gap: 8px; }
+  .opt-btn { flex: 1; padding: 11px 6px; border-radius: 13px; border: 2px solid var(--border);
+    background: none; font-size: 14px; font-weight: 800; color: var(--muted); }
+  .opt-btn.sel { border-color: var(--accent); color: var(--accent); background: rgba(199,62,58,.06); }
+  .bigbtn { width: 100%; padding: 15px; border: none; border-radius: 16px; background: var(--grad);
+    color: #fff; font-size: 16px; font-weight: 800; box-shadow: var(--shadow); }
+  .bigbtn:disabled { opacity: .4; }
+  .bigbtn.ghost { background: none; border: 1.5px solid var(--border); color: var(--muted); box-shadow: none; margin-top: 10px; }
+
+  /* handoff */
+  #hand-name { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 30px; font-weight: 900; text-align: center; margin: 40px 0 8px; }
+  .hand-hint { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 26px; }
+  #scorebar { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 24px; }
+  .sc { font-size: 12px; font-weight: 700; color: var(--indigo); background: rgba(51,80,107,.08);
+    padding: 5px 11px; border-radius: 999px; }
+  .sc.lead { color: var(--gold); background: rgba(184,134,11,.12); }
+
+  /* turn */
+  #turn-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  #turn-who { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 18px; }
+  #turn-round { font-size: 11px; font-weight: 800; letter-spacing: .5px; color: var(--muted); text-transform: uppercase; }
+  #piles { display: flex; gap: 10px; margin-bottom: 12px; }
+  .pile { flex: 1; border-radius: 16px; border: 2px solid var(--border); background: var(--card);
+    padding: 12px 8px; text-align: center; box-shadow: var(--shadow); }
+  .pile .lbl { font-size: 10.5px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .pile .big { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 30px; font-weight: 900; color: var(--indigo); line-height: 1; }
+  .pile.deck .big { color: var(--muted); }
+  .pile.selectable { border-color: var(--accent); }
+  .pile.drawn { border-color: var(--matcha); background: rgba(90,143,93,.07); }
+  .pile.drawn .big { color: var(--matcha); }
+  #action-hint { text-align: center; font-size: 13px; font-weight: 600; color: var(--accent); min-height: 20px; margin-bottom: 10px; }
+
+  #rack { display: flex; flex-direction: column-reverse; gap: 6px; }
+  .slot { display: flex; align-items: center; gap: 10px; }
+  .slot .pts { width: 30px; text-align: right; font-size: 11px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .slot button {
+    flex: 1; padding: 10px 14px; border-radius: 12px; border: 1.5px solid var(--border);
+    background: var(--card); font-family: "Zen Kaku Gothic New", sans-serif; font-size: 19px; font-weight: 900;
+    color: var(--indigo); text-align: center; transition: all .12s; box-shadow: 0 2px 8px rgba(90,70,40,.06);
+  }
+  .slot button.swappable { border-color: var(--accent); background: rgba(199,62,58,.05); }
+  .slot button.inrun { border-color: rgba(90,143,93,.5); background: rgba(90,143,93,.06); color: var(--matcha); }
+  #discard-btn { margin-top: 12px; }
+
+  /* round end */
+  .re-title { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 24px; font-weight: 900; text-align: center; margin: 18px 0 4px; }
+  .re-sub { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  table.res { width: 100%; border-collapse: collapse; }
+  table.res td { padding: 10px 6px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  table.res td.n { font-weight: 700; }
+  table.res td.p { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+  table.res td.add { text-align: right; color: var(--matcha); font-weight: 700; width: 60px; }
+  .winner-big { text-align: center; font-size: 46px; margin: 8px 0; }
+</style>
+</head>
+<body>
+<a class="back" href="../">← Games</a>
+<h1>Rakko <span>🃏</span></h1>
+<div class="sub">Få kortene i stigende rekkefølge — 5 poeng per kort, 25 bonus for full rekke</div>
+
+<!-- SETUP -->
+<div class="screen show" id="s-setup">
+  <div class="panel">
+    <h2>Spillere (2–4)</h2>
+    <div class="name-row">
+      <input id="pname" placeholder="Navn …" maxlength="14" autocomplete="off">
+      <button id="padd">+</button>
+    </div>
+    <div class="plist" id="plist"></div>
+  </div>
+  <div class="panel">
+    <h2>Spill til</h2>
+    <div class="opt-row" id="target-row">
+      <button class="opt-btn" data-t="100">100</button>
+      <button class="opt-btn sel" data-t="200">200</button>
+      <button class="opt-btn" data-t="500">500 (klassisk)</button>
+    </div>
+  </div>
+  <button class="bigbtn" id="start" disabled>Start spillet</button>
+</div>
+
+<!-- HANDOFF -->
+<div class="screen" id="s-hand">
+  <div id="hand-name"></div>
+  <div class="hand-hint">Din tur! Ingen andre må se skjermen 🤫</div>
+  <div id="scorebar"></div>
+  <button class="bigbtn" id="hand-go">Vis mitt brett</button>
+</div>
+
+<!-- TURN -->
+<div class="screen" id="s-turn">
+  <div id="turn-top">
+    <div id="turn-who"></div>
+    <div id="turn-round"></div>
+  </div>
+  <div id="piles">
+    <div class="pile deck" id="pile-deck">
+      <div class="lbl">Bunken</div>
+      <div class="big">🂠</div>
+      <div class="lbl" id="deck-count"></div>
+    </div>
+    <div class="pile" id="pile-discard">
+      <div class="lbl">Kastebunken</div>
+      <div class="big" id="discard-top">—</div>
+      <div class="lbl">synlig</div>
+    </div>
+  </div>
+  <div id="action-hint"></div>
+  <div id="rack"></div>
+  <button class="bigbtn ghost" id="discard-btn" style="display:none">Kast kortet (behold brettet)</button>
+</div>
+
+<!-- ROUND END -->
+<div class="screen" id="s-round">
+  <div class="winner-big" id="re-emoji">🎉</div>
+  <div class="re-title" id="re-title"></div>
+  <div class="re-sub" id="re-sub"></div>
+  <div class="panel"><table class="res" id="re-table"></table></div>
+  <button class="bigbtn" id="re-next"></button>
+  <button class="bigbtn ghost" id="re-quit">Avslutt spillet</button>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const SLOTS = 10;
+const PTS = [5,10,15,20,25,30,35,40,45,50]; // etikett per plass (nederst → øverst)
+
+/* ---------- setup ---------- */
+const names = [];
+let target = 200;
+
+function renderNames() {
+  $("plist").innerHTML = names.map((n, i) => `<span class="ptag">${n}<button data-i="${i}">✕</button></span>`).join("");
+  $("plist").querySelectorAll("button").forEach(b => b.onclick = () => { names.splice(+b.dataset.i, 1); renderNames(); });
+  $("start").disabled = names.length < 2;
+}
+function addName() {
+  const n = $("pname").value.trim();
+  if (!n || names.length >= 4) return;
+  names.push(n); $("pname").value = ""; renderNames(); $("pname").focus();
+}
+$("padd").onclick = addName;
+$("pname").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
+$("target-row").querySelectorAll(".opt-btn").forEach(b => b.onclick = () => {
+  target = +b.dataset.t;
+  $("target-row").querySelectorAll(".opt-btn").forEach(x => x.classList.remove("sel"));
+  b.classList.add("sel");
+});
+
+/* ---------- spillets tilstand ---------- */
+let G = null; // { players:[{name,score,rack[]}], deck, discard, cur, round, drawn:{card,from}|null }
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function deckSize(nPlayers) { return nPlayers <= 2 ? 40 : nPlayers === 3 ? 50 : 60; }
+
+function newRound() {
+  const n = G.players.length;
+  const deck = shuffle(Array.from({ length: deckSize(n) }, (_, i) => i + 1));
+  G.players.forEach(p => { p.rack = deck.splice(0, SLOTS); });
+  G.discard = [deck.pop()];
+  G.deck = deck;
+  G.drawn = null;
+  G.round++;
+}
+
+function isSorted(rack) { return rack.every((c, i) => i === 0 || c > rack[i-1]); }
+function runLen(rack) { // stigende rekke fra bunnen
+  let n = 1;
+  for (let i = 1; i < rack.length; i++) { if (rack[i] > rack[i-1]) n++; else break; }
+  return n;
+}
+function roundPoints(rack) { const r = runLen(rack); return r * 5 + (r === SLOTS ? 25 : 0); }
+
+$("start").onclick = () => {
+  G = { players: names.map(n => ({ name: n, score: 0, rack: [] })), cur: 0, round: 0 };
+  newRound();
+  showHand();
+};
+
+/* ---------- handoff ---------- */
+function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("show")); $(id).classList.add("show"); }
+
+function showHand() {
+  show("s-hand");
+  $("hand-name").textContent = "📱 " + G.players[G.cur].name;
+  const max = Math.max(...G.players.map(p => p.score));
+  $("scorebar").innerHTML = G.players.map(p =>
+    `<span class="sc ${p.score === max && max > 0 ? "lead" : ""}">${p.score === max && max > 0 ? "👑 " : ""}${p.name}: ${p.score}</span>`).join("");
+}
+$("hand-go").onclick = showTurn;
+
+/* ---------- tur ---------- */
+function showTurn() {
+  show("s-turn");
+  render();
+}
+function render() {
+  const p = G.players[G.cur];
+  $("turn-who").textContent = p.name;
+  $("turn-round").textContent = `Runde ${G.round} · til ${target}`;
+  $("deck-count").textContent = G.deck.length + " igjen";
+  $("discard-top").textContent = G.discard.length ? G.discard[G.discard.length - 1] : "—";
+
+  const drawn = G.drawn;
+  $("pile-deck").className = "pile deck" + (!drawn ? " selectable" : drawn.from === "deck" ? " drawn" : "");
+  $("pile-discard").className = "pile" + (!drawn ? " selectable" : drawn.from === "discard" ? " drawn" : "");
+  if (drawn) $(drawn.from === "deck" ? "pile-deck" : "pile-discard").querySelector(".big").textContent = drawn.card;
+  else $("pile-deck").querySelector(".big").textContent = "🂠";
+
+  $("action-hint").textContent = drawn
+    ? `Du trakk ${drawn.card} — trykk på plassen den skal inn på`
+    : "Trekk fra bunken eller ta det synlige kortet";
+  $("discard-btn").style.display = drawn && drawn.from === "deck" ? "block" : "none";
+
+  const rl = runLen(p.rack);
+  $("rack").innerHTML = p.rack.map((c, i) => `
+    <div class="slot">
+      <div class="pts">${PTS[i]}</div>
+      <button data-i="${i}" class="${drawn ? "swappable" : i < rl ? "inrun" : ""}">${c}</button>
+    </div>`).join("");
+  $("rack").querySelectorAll("button").forEach(b => b.onclick = () => onSlot(+b.dataset.i));
+}
+
+$("pile-deck").onclick = () => {
+  if (G.drawn || !G.deck.length) return;
+  G.drawn = { card: G.deck.pop(), from: "deck" };
+  if (!G.deck.length) reshuffleDeck();
+  render();
+};
+$("pile-discard").onclick = () => {
+  if (G.drawn || !G.discard.length) return;
+  G.drawn = { card: G.discard.pop(), from: "discard" };
+  render();
+};
+function reshuffleDeck() {
+  if (G.discard.length > 1) {
+    const top = G.discard.pop();
+    G.deck = shuffle(G.discard);
+    G.discard = [top];
+  }
+}
+$("discard-btn").onclick = () => { // kun mulig etter trekk fra bunken
+  G.discard.push(G.drawn.card);
+  G.drawn = null;
+  endTurn();
+};
+function onSlot(i) {
+  if (!G.drawn) return;
+  const p = G.players[G.cur];
+  const out = p.rack[i];
+  p.rack[i] = G.drawn.card;
+  G.discard.push(out);
+  G.drawn = null;
+  if (isSorted(p.rack)) { endRound(p); return; }
+  endTurn();
+}
+function endTurn() {
+  G.cur = (G.cur + 1) % G.players.length;
+  showHand();
+}
+
+/* ---------- rundeslutt ---------- */
+function endRound(winner) {
+  G.players.forEach(p => { p.lastAdd = roundPoints(p.rack); p.score += p.lastAdd; });
+  const gameOver = G.players.some(p => p.score >= target);
+  const leader = [...G.players].sort((a, b) => b.score - a.score)[0];
+
+  show("s-round");
+  $("re-emoji").textContent = gameOver ? "🏆" : "🎉";
+  $("re-title").textContent = gameOver
+    ? `${leader.name} vinner spillet!`
+    : `${winner.name} vant runden — RAKKO!`;
+  $("re-sub").textContent = gameOver
+    ? `Førstemann til ${target} poeng`
+    : `Full stigende rekke · runde ${G.round}`;
+  $("re-table").innerHTML = [...G.players].sort((a, b) => b.score - a.score).map(p =>
+    `<tr><td class="n">${p === leader && gameOver ? "🏆 " : ""}${p.name}</td>
+     <td class="add">+${p.lastAdd}</td><td class="p">${p.score}</td></tr>`).join("");
+  $("re-next").textContent = gameOver ? "Ny omgang (nullstill poeng)" : "Neste runde →";
+  $("re-next").onclick = () => {
+    if (gameOver) { G.players.forEach(p => { p.score = 0; }); G.round = 0; }
+    G.cur = (G.round) % G.players.length;
+    newRound();
+    showHand();
+  };
+}
+$("re-quit").onclick = () => { G = null; show("s-setup"); };
+</script>
+</body>
+</html>
