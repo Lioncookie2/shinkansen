@@ -104,6 +104,13 @@
 <!-- SETUP -->
 <div class="screen show" id="s-setup">
   <div class="panel">
+    <h2>Modus</h2>
+    <div class="opt-row" id="mode-row">
+      <button class="opt-btn sel" data-m="solo">Solo mot 🤖</button>
+      <button class="opt-btn" data-m="pass">Send mobilen rundt</button>
+    </div>
+  </div>
+  <div class="panel" id="players-panel" style="display:none">
     <h2>Spillere (2–4)</h2>
     <div class="name-row">
       <input id="pname" placeholder="Navn …" maxlength="14" autocomplete="off">
@@ -172,11 +179,21 @@ const PTS = [5,10,15,20,25,30,35,40,45,50]; // etikett per plass (nederst → ø
 /* ---------- setup ---------- */
 const names = [];
 let target = 200;
+let modeSel = "solo";
+
+$("mode-row").querySelectorAll(".opt-btn").forEach(b => b.onclick = () => {
+  modeSel = b.dataset.m;
+  $("mode-row").querySelectorAll(".opt-btn").forEach(x => x.classList.remove("sel"));
+  b.classList.add("sel");
+  $("players-panel").style.display = modeSel === "pass" ? "block" : "none";
+  updateStartBtn();
+});
+function updateStartBtn() { $("start").disabled = modeSel === "pass" && names.length < 2; }
 
 function renderNames() {
   $("plist").innerHTML = names.map((n, i) => `<span class="ptag">${n}<button data-i="${i}">✕</button></span>`).join("");
   $("plist").querySelectorAll("button").forEach(b => b.onclick = () => { names.splice(+b.dataset.i, 1); renderNames(); });
-  $("start").disabled = names.length < 2;
+  updateStartBtn();
 }
 function addName() {
   const n = $("pname").value.trim();
@@ -200,7 +217,11 @@ function deckSize(nPlayers) { return nPlayers <= 2 ? 40 : nPlayers === 3 ? 50 : 
 function newRound() {
   const n = G.players.length;
   const deck = shuffle(Array.from({ length: deckSize(n) }, (_, i) => i + 1));
-  G.players.forEach(p => { p.rack = deck.splice(0, SLOTS); });
+  G.players.forEach(p => {
+    // deles ut ovenfra: første kort i plass 50, siste i plass 5
+    p.rack = new Array(SLOTS);
+    for (let i = SLOTS - 1; i >= 0; i--) p.rack[i] = deck.pop();
+  });
   G.discard = [deck.pop()];
   G.deck = deck;
   G.drawn = null;
@@ -216,10 +237,21 @@ function runLen(rack) { // stigende rekke fra bunnen
 function roundPoints(rack) { const r = runLen(rack); return r * 5 + (r === SLOTS ? 25 : 0); }
 
 $("start").onclick = () => {
-  G = { players: names.map(n => ({ name: n, score: 0, rack: [] })), cur: 0, round: 0 };
+  const ps = modeSel === "solo"
+    ? [{ name: "Du", score: 0, rack: [] }, { name: "Roboten 🤖", score: 0, rack: [], ai: true }]
+    : names.map(n => ({ name: n, score: 0, rack: [] }));
+  G = { players: ps, cur: 0, round: 0, solo: modeSel === "solo" };
   newRound();
-  showHand();
+  nextTurn();
 };
+
+/* i solo hopper vi over «skjul skjermen»-steget for mennesket */
+function nextTurn() {
+  const p = G.players[G.cur];
+  if (p.ai) { robotTurn(); return; }
+  if (G.solo) { showTurn(); return; }
+  showHand();
+}
 
 /* ---------- handoff ---------- */
 function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("show")); $(id).classList.add("show"); }
@@ -227,6 +259,9 @@ function show(id) { document.querySelectorAll(".screen").forEach(s => s.classLis
 function showHand() {
   show("s-hand");
   $("hand-name").textContent = "📱 " + G.players[G.cur].name;
+  renderScorebar();
+}
+function renderScorebar() {
   const max = Math.max(...G.players.map(p => p.score));
   $("scorebar").innerHTML = G.players.map(p =>
     `<span class="sc ${p.score === max && max > 0 ? "lead" : ""}">${p.score === max && max > 0 ? "👑 " : ""}${p.name}: ${p.score}</span>`).join("");
@@ -300,7 +335,57 @@ function onSlot(i) {
 }
 function endTurn() {
   G.cur = (G.cur + 1) % G.players.length;
-  showHand();
+  nextTurn();
+}
+
+/* ---------- robot ---------- */
+function maxCard() { return deckSize(G.players.length); }
+function idealSlot(card) { return Math.min(SLOTS - 1, Math.floor((card - 1) / maxCard() * SLOTS)); }
+function slotOk(rack, i) { return idealSlot(rack[i]) === i; }
+
+function robotPlay() {
+  const p = G.players[G.cur];
+  const top = G.discard[G.discard.length - 1];
+  // 1) synlig kort: bytt inn hvis det passer i en plass som i dag er «feil»
+  if (top !== undefined) {
+    const s = idealSlot(top);
+    if (!slotOk(p.rack, s)) {
+      const out = p.rack[s];
+      p.rack[s] = top; G.discard.pop(); G.discard.push(out);
+      return `tok ${top} fra kastebunken`;
+    }
+  }
+  // 2) ellers: trekk fra bunken
+  if (!G.deck.length) reshuffleDeck();
+  const c = G.deck.pop();
+  if (!G.deck.length) reshuffleDeck();
+  const s = idealSlot(c);
+  if (!slotOk(p.rack, s)) {
+    const out = p.rack[s];
+    p.rack[s] = c; G.discard.push(out);
+    return `trakk fra bunken og byttet inn et kort`;
+  }
+  G.discard.push(c);
+  return `trakk fra bunken og kastet ${c}`;
+}
+
+function robotTurn() {
+  show("s-hand");
+  $("hand-name").textContent = "🤖 Roboten";
+  document.querySelector("#s-hand .hand-hint").textContent = "Roboten tenker …";
+  $("hand-go").style.display = "none";
+  renderScorebar();
+  setTimeout(() => {
+    const what = robotPlay();
+    const p = G.players[G.cur];
+    if (isSorted(p.rack)) { restoreHand(); endRound(p); return; }
+    document.querySelector("#s-hand .hand-hint").textContent = `Roboten ${what}.`;
+    setTimeout(() => { restoreHand(); endTurn(); }, 1100);
+  }, 900);
+}
+function restoreHand() {
+  $("hand-go").style.display = "block";
+  document.querySelector("#s-hand .hand-hint").textContent = "Din tur! Ingen andre må se skjermen 🤫";
 }
 
 /* ---------- rundeslutt ---------- */
@@ -325,10 +410,11 @@ function endRound(winner) {
     if (gameOver) { G.players.forEach(p => { p.score = 0; }); G.round = 0; }
     G.cur = (G.round) % G.players.length;
     newRound();
-    showHand();
+    nextTurn();
   };
 }
 $("re-quit").onclick = () => { G = null; show("s-setup"); };
+updateStartBtn();
 </script>
 </body>
 </html>
