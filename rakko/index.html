@@ -157,7 +157,6 @@
   </div>
   <div id="action-hint"></div>
   <div id="rack"></div>
-  <button class="bigbtn ghost" id="discard-btn" style="display:none">Kast kortet (behold brettet)</button>
 </div>
 
 <!-- ROUND END -->
@@ -209,10 +208,10 @@ $("target-row").querySelectorAll(".opt-btn").forEach(b => b.onclick = () => {
 });
 
 /* ---------- spillets tilstand ---------- */
-let G = null; // { players:[{name,score,rack[]}], deck, discard, cur, round, drawn:{card,from}|null }
+let G = null; // { players:[{name,score,rack[]}], deck, discard, cur, round, selSlot:number|null }
 
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function deckSize(nPlayers) { return nPlayers <= 2 ? 40 : nPlayers === 3 ? 50 : 60; }
+function deckSize() { return 60; } // alltid full kortstokk 1–60
 
 function newRound() {
   const n = G.players.length;
@@ -224,7 +223,7 @@ function newRound() {
   });
   G.discard = [deck.pop()];
   G.deck = deck;
-  G.drawn = null;
+  G.selSlot = null;
   G.round++;
 }
 
@@ -280,36 +279,46 @@ function render() {
   $("deck-count").textContent = G.deck.length + " igjen";
   $("discard-top").textContent = G.discard.length ? G.discard[G.discard.length - 1] : "—";
 
-  const drawn = G.drawn;
-  $("pile-deck").className = "pile deck" + (!drawn ? " selectable" : drawn.from === "deck" ? " drawn" : "");
-  $("pile-discard").className = "pile" + (!drawn ? " selectable" : drawn.from === "discard" ? " drawn" : "");
-  if (drawn) $(drawn.from === "deck" ? "pile-deck" : "pile-discard").querySelector(".big").textContent = drawn.card;
-  else $("pile-deck").querySelector(".big").textContent = "🂠";
+  const sel = G.selSlot;
+  $("pile-deck").className = "pile deck" + (sel != null ? " selectable" : "");
+  $("pile-discard").className = "pile" + (sel != null ? " selectable" : "");
+  $("pile-deck").querySelector(".big").textContent = "🂠";
 
-  $("action-hint").textContent = drawn
-    ? `Du trakk ${drawn.card} — trykk på plassen den skal inn på`
-    : "Trekk fra bunken eller ta det synlige kortet";
-  $("discard-btn").style.display = drawn && drawn.from === "deck" ? "block" : "none";
+  $("action-hint").textContent = sel != null
+    ? `Du bytter ut ${p.rack[sel]} (plass ${PTS[sel]}) — ta synlig ${G.discard[G.discard.length - 1] ?? "?"}, eller sats skjult på bunken`
+    : "Velg først kortet du vil bytte ut";
 
   const rl = runLen(p.rack);
   $("rack").innerHTML = p.rack.map((c, i) => `
     <div class="slot">
       <div class="pts">${PTS[i]}</div>
-      <button data-i="${i}" class="${drawn ? "swappable" : i < rl ? "inrun" : ""}">${c}</button>
+      <button data-i="${i}" class="${sel === i ? "swappable" : i < rl ? "inrun" : ""}">${c}</button>
     </div>`).join("");
   $("rack").querySelectorAll("button").forEach(b => b.onclick = () => onSlot(+b.dataset.i));
 }
 
-$("pile-deck").onclick = () => {
-  if (G.drawn || !G.deck.length) return;
-  G.drawn = { card: G.deck.pop(), from: "deck" };
-  if (!G.deck.length) reshuffleDeck();
+function onSlot(i) { // velg (eller avvelg) kortet som skal byttes ut
+  G.selSlot = G.selSlot === i ? null : i;
   render();
+}
+function swapInto(card) {
+  const p = G.players[G.cur];
+  const out = p.rack[G.selSlot];
+  p.rack[G.selSlot] = card;
+  G.discard.push(out);
+  G.selSlot = null;
+  if (isSorted(p.rack)) { endRound(p); return; }
+  endTurn();
+}
+$("pile-deck").onclick = () => { // skjult kort: du MÅ ta det du trekker
+  if (G.selSlot == null || !G.deck.length) return;
+  const c = G.deck.pop();
+  if (!G.deck.length) reshuffleDeck();
+  swapInto(c);
 };
 $("pile-discard").onclick = () => {
-  if (G.drawn || !G.discard.length) return;
-  G.drawn = { card: G.discard.pop(), from: "discard" };
-  render();
+  if (G.selSlot == null || !G.discard.length) return;
+  swapInto(G.discard.pop());
 };
 function reshuffleDeck() {
   if (G.discard.length > 1) {
@@ -318,22 +327,8 @@ function reshuffleDeck() {
     G.discard = [top];
   }
 }
-$("discard-btn").onclick = () => { // kun mulig etter trekk fra bunken
-  G.discard.push(G.drawn.card);
-  G.drawn = null;
-  endTurn();
-};
-function onSlot(i) {
-  if (!G.drawn) return;
-  const p = G.players[G.cur];
-  const out = p.rack[i];
-  p.rack[i] = G.drawn.card;
-  G.discard.push(out);
-  G.drawn = null;
-  if (isSorted(p.rack)) { endRound(p); return; }
-  endTurn();
-}
 function endTurn() {
+  G.selSlot = null;
   G.cur = (G.cur + 1) % G.players.length;
   nextTurn();
 }
@@ -344,29 +339,32 @@ function idealSlot(card) { return Math.min(SLOTS - 1, Math.floor((card - 1) / ma
 function slotOk(rack, i) { return idealSlot(rack[i]) === i; }
 
 function robotPlay() {
+  // Samme regel som deg: velg plass FØRST, trekk etterpå.
   const p = G.players[G.cur];
   const top = G.discard[G.discard.length - 1];
-  // 1) synlig kort: bytt inn hvis det passer i en plass som i dag er «feil»
+  // 1) synlig kort: hvis det passer i en plass som i dag er «feil», ta det dit
   if (top !== undefined) {
     const s = idealSlot(top);
     if (!slotOk(p.rack, s)) {
       const out = p.rack[s];
       p.rack[s] = top; G.discard.pop(); G.discard.push(out);
-      return `tok ${top} fra kastebunken`;
+      return `byttet ut plass ${PTS[s]} mot synlig ${top}`;
     }
   }
-  // 2) ellers: trekk fra bunken
+  // 2) ellers: velg den «feileste» plassen og gambl på skjult kort
+  let worst = -1, worstDist = -1;
+  for (let i = 0; i < SLOTS; i++) {
+    if (slotOk(p.rack, i)) continue;
+    const dist = Math.abs(idealSlot(p.rack[i]) - i);
+    if (dist > worstDist) { worstDist = dist; worst = i; }
+  }
+  if (worst === -1) worst = 0; // alt riktig plassert (kan skje uten full seier)
   if (!G.deck.length) reshuffleDeck();
   const c = G.deck.pop();
   if (!G.deck.length) reshuffleDeck();
-  const s = idealSlot(c);
-  if (!slotOk(p.rack, s)) {
-    const out = p.rack[s];
-    p.rack[s] = c; G.discard.push(out);
-    return `trakk fra bunken og byttet inn et kort`;
-  }
-  G.discard.push(c);
-  return `trakk fra bunken og kastet ${c}`;
+  const out = p.rack[worst];
+  p.rack[worst] = c; G.discard.push(out);
+  return `satset skjult på plass ${PTS[worst]} og fikk ${c}`;
 }
 
 function robotTurn() {
