@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4ede0">
+<title>Kyoto-guide · MilesTech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@700;900&family=Shippori+Mincho:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4ede0; --card: #fcf8f0; --border: rgba(60,45,30,.12);
+    --text: #27221b; --muted: #8a7f6d; --accent: #c73e3a; --indigo: #33506b;
+    --matcha: #5a8f5d; --gold: #b8860b;
+    --grad: linear-gradient(135deg, #c73e3a, #e0632e);
+    --shadow: 0 8px 30px rgba(90,70,40,.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center;
+    padding: calc(18px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom)); }
+  a.back { position: absolute; top: calc(18px + env(safe-area-inset-top)); left: 14px; text-decoration: none;
+    color: var(--muted); font-size: 13px; font-weight: 600; }
+  .jp { font-family: "Shippori Mincho", serif; color: var(--accent); }
+
+  header { text-align: center; margin-bottom: 6px; max-width: 480px; }
+  h1 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 34px; }
+  h1 .jp { font-size: 22px; margin-left: 8px; }
+  .sub { font-size: 13.5px; color: var(--muted); margin: 6px 0 4px; line-height: 1.5; }
+
+  /* torii-motiv */
+  .torii { font-size: 44px; margin-bottom: 2px; }
+
+  main { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+
+  h2.section { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 20px; margin: 14px 0 0; }
+  h2.section .jp { font-size: 14px; margin-left: 8px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 16px 18px 16px 21px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--grad); }
+  .card h3 { font-size: 16.5px; font-weight: 800; margin-bottom: 2px; }
+  .card h3 .jp { font-size: 13px; font-weight: 600; margin-left: 6px; }
+  .card .meta { font-size: 11.5px; font-weight: 700; color: var(--gold); margin-bottom: 7px; }
+  .card p { font-size: 13.5px; color: #6b5f4d; line-height: 1.6; }
+  .card .tip { margin-top: 9px; font-size: 12.5px; font-weight: 600; color: var(--accent);
+    background: rgba(199,62,58,.07); border-radius: 10px; padding: 7px 11px; line-height: 1.5; }
+
+  .card.green::before { background: var(--matcha); }
+  .card.blue::before { background: var(--indigo); }
+
+  /* dagsplan */
+  .day { display: flex; gap: 12px; }
+  .day .when { flex-shrink: 0; width: 52px; font-size: 12px; font-weight: 800; color: var(--indigo);
+    font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .day .what { font-size: 13.5px; color: #55493a; line-height: 1.55; padding-bottom: 12px;
+    border-left: 2px solid rgba(60,45,30,.12); padding-left: 12px; }
+  .day:last-child .what { padding-bottom: 0; }
+  .day .what b { color: var(--text); }
+
+  /* fraser */
+  table.phrases { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.phrases td { padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  table.phrases tr:last-child td { border-bottom: none; }
+  table.phrases td.no { color: #6b5f4d; }
+  table.phrases td.ja { font-weight: 700; text-align: right; white-space: nowrap; }
+  table.phrases td.ja small { display: block; font-weight: 500; color: var(--muted); }
+
+  footer { margin-top: 36px; font-size: 11.5px; color: var(--muted); text-align: center; line-height: 1.7; }
+</style>
+</head>
+<body>
+<a class="back" href="../">← MilesTech</a>
+<header>
+  <div class="torii">⛩️</div>
+  <h1>Kyoto<span class="jp">京都</span></h1>
+  <div class="sub">Japans gamle hovedstad i over tusen år — 1600 templer, geisha-kvartaler og byens beste matmarked. Her er familiens guide.</div>
+</header>
+
+<main>
+  <h2 class="section">Må-se<span class="jp">名所</span></h2>
+
+  <div class="card">
+    <h3>Fushimi Inari-taisha<span class="jp">伏見稲荷</span></h3>
+    <div class="meta">⛩️ 10 000 røde porter · gratis · åpent hele døgnet</div>
+    <p>Helligdommen med de berømte torii-tunnelene oppover fjellet. Portene er donert av bedrifter — navnene står malt på baksiden. Revene (kitsune) er gudinnen Inaris budbringere.</p>
+    <div class="tip">💡 Dra FØR kl. 08 eller etter kl. 17 — midt på dagen er det kø for å ta bilde. Hele runden opp tar 2–3 timer, men de fineste bildene får du de første 20 minuttene.</div>
+  </div>
+
+  <div class="card">
+    <h3>Kinkaku-ji — Gullpaviljongen<span class="jp">金閣寺</span></h3>
+    <div class="meta">✨ dekket av ekte gullblad · 500 yen · 09–17</div>
+    <p>Zen-tempelet fra 1397 som speiler seg i dammen — Japans mest fotograferte bygning. Dagens paviljong er fra 1955: en ung munk brant ned originalen i 1950, en historie som ble roman av Yukio Mishima.</p>
+    <div class="tip">💡 Best lys på formiddagen når solen treffer gullet forfra. Regn er faktisk fint her — færre folk og dypere farger.</div>
+  </div>
+
+  <div class="card">
+    <h3>Arashiyama bambuskog<span class="jp">嵐山</span></h3>
+    <div class="meta">🎋 gratis · vakrest tidlig morgen</div>
+    <p>Stien gjennom kjempebambusen vest i byen. Lyden av vinden i bambusen er kåret til en av «Japans 100 lyder». Rett ved: Tenryu-ji-tempelet (UNESCO) og apeparken Iwatayama med utsikt over hele Kyoto.</p>
+    <div class="tip">💡 Kombiner med Togetsukyo-broen og en matcha-is langs elven. Toget fra Kyoto stasjon tar 15 min (JR Sagano-linjen).</div>
+  </div>
+
+  <div class="card">
+    <h3>Kiyomizu-dera<span class="jp">清水寺</span></h3>
+    <div class="meta">🏔️ trescenen over dalen · 400 yen · 06–18</div>
+    <p>Tempelet fra 778 med den enorme treterrassen — bygget uten en eneste spiker. Uttrykket «å hoppe fra Kiyomizu-scenen» er japansk for å ta en stor sjanse. Gatene opp (Sannenzaka/Ninenzaka) er gamle Kyoto på sitt fineste.</p>
+    <div class="tip">💡 Gå opp via Ninenzaka-gaten og spis en «yatsuhashi»-smakebit i butikkene på veien — de gir gratis prøver!</div>
+  </div>
+
+  <div class="card">
+    <h3>Gion & Pontocho<span class="jp">祇園</span></h3>
+    <div class="meta">🏮 geisha-kvartalet · gratis å vandre · best i skumringen</div>
+    <p>Trehusgatene der geikoene (Kyotos geishaer) fortsatt jobber. Hanamikoji-gaten er hovedåren; Pontocho er den smale restaurantgaten langs elven. Ser du en geiko på vei til oppdrag i skumringen, har du flaks.</p>
+    <div class="tip">💡 Vær diskret med kamera — det er bøter for å fotografere geikoer nærgående i private smug. Shirakawa-kanalen nord i Gion er minst turistifisert.</div>
+  </div>
+
+  <h2 class="section">Mat<span class="jp">食</span></h2>
+
+  <div class="card green">
+    <h3>Nishiki-markedet<span class="jp">錦市場</span></h3>
+    <div class="meta">🍡 «Kyotos kjøkken» · 130 boder · 10–17</div>
+    <p>400 meter overbygd matgate midt i sentrum. Prøv: tako tamago (blekksprut med vaktelegg), fersk soyamelk-donuts, tsukemono (syltede grønnsaker) og dashimaki-omelett.</p>
+    <div class="tip">💡 Spis der du kjøper — å gå og spise samtidig regnes som uhøflig. De fleste boder har en liten benk.</div>
+  </div>
+
+  <div class="card green">
+    <h3>Kyoto-spesialiteter</h3>
+    <div class="meta">🍵 det du bør smake før dere drar</div>
+    <p><b>Matcha alt</b> — Uji rett sør for byen er Japans tehovedstad; matcha-softis er obligatorisk. <b>Yudofu</b> — silkemyk tofu-gryte, munkenes mat. <b>Obanzai</b> — Kyotos hjemmekost, små retter. <b>Kaiseki</b> — vil dere unne dere én fin middag, er det her den skal spises.</p>
+  </div>
+
+  <h2 class="section">To dager i Kyoto<span class="jp">予定</span></h2>
+
+  <div class="card blue">
+    <h3>Dag 1 · Øst-Kyoto</h3>
+    <div style="height:10px"></div>
+    <div class="day"><div class="when">07:30</div><div class="what"><b>Fushimi Inari</b> før folkemengdene — tog fra Kyoto stasjon, 5 min (JR Nara-linjen til Inari).</div></div>
+    <div class="day"><div class="when">11:00</div><div class="what"><b>Kiyomizu-dera</b> og vandring ned Sannenzaka/Ninenzaka-gatene. Lunsj underveis.</div></div>
+    <div class="day"><div class="when">15:00</div><div class="what"><b>Yasaka-helligdommen</b> og Maruyama-parken, videre inn i <b>Gion</b>.</div></div>
+    <div class="day"><div class="when">18:00</div><div class="what">Skumring i Gion — middag i <b>Pontocho</b>-gaten langs elven.</div></div>
+  </div>
+
+  <div class="card blue">
+    <h3>Dag 2 · Vest & sentrum</h3>
+    <div style="height:10px"></div>
+    <div class="day"><div class="when">08:00</div><div class="what"><b>Arashiyama</b>: bambuskogen først, så Tenryu-ji og elvepromenaden.</div></div>
+    <div class="day"><div class="when">12:30</div><div class="what"><b>Kinkaku-ji</b> (buss 205 fra Arashiyama-området, ca. 30 min).</div></div>
+    <div class="day"><div class="when">15:00</div><div class="what"><b>Nishiki-markedet</b> — sen «lunsj nummer to» bod for bod.</div></div>
+    <div class="day"><div class="when">17:00</div><div class="what">Shopping på <b>Teramachi</b>-arkadene rett ved, eller onsen-fotbad hvis beina protesterer.</div></div>
+  </div>
+
+  <h2 class="section">Praktisk<span class="jp">実用</span></h2>
+
+  <div class="card">
+    <h3>Komme seg rundt</h3>
+    <p><b>Buss</b> dekker mest (230 yen flatt, betal når du går av — IC-kort funker). <b>Tog/t-bane</b> er raskere øst–vest. <b>Sykkel</b> er undervurdert — Kyoto er flat og har egne sykkelfelt. Google Maps er pålitelig på bussrutene.</p>
+    <div class="tip">💡 Fra Kyoto stasjon: nesten alle severdigheter nås med buss 100, 205 eller 206. Unngå buss 15:30–18 — rushtid + turister = sardinboks.</div>
+  </div>
+
+  <div class="card">
+    <h3>Nyttige fraser</h3>
+    <table class="phrases">
+      <tr><td class="no">Takk</td><td class="ja">ありがとう<small>arigatou</small></td></tr>
+      <tr><td class="no">Unnskyld / hallo der</td><td class="ja">すみません<small>sumimasen</small></td></tr>
+      <tr><td class="no">Hvor er …?</td><td class="ja">…はどこですか<small>… wa doko desu ka</small></td></tr>
+      <tr><td class="no">Regningen, takk</td><td class="ja">お会計お願いします<small>o-kaikei onegaishimasu</small></td></tr>
+      <tr><td class="no">Velsmakende!</td><td class="ja">おいしい！<small>oishii!</small></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Tempel-vett</h3>
+    <p>Bukk lett ved torii-porten. Ved renselsesfontenen: skyll venstre hånd, høyre hånd, munn (fra hånden). Ikke gå midt i porten — midten er for gudene. Sko av der det er hevet tregulv. Mynter på 5 yen regnes som lykkemynt i offerboksen (go-en = «god skjebne»).</p>
+  </div>
+</main>
+
+<footer>
+  God tur! 🚄<br>
+  <span class="jp">ミレステック</span> · MilesTech
+</footer>
+</body>
+</html>
