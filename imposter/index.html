@@ -165,7 +165,19 @@ const WORDS = {
     "Passord", "Minibank", "Heisekran", "Trampoline", "Snøfreser", "Kaffetrakter", "Drone", "Ski", "Telt", "Mikrobølgeovn"],
   "Aktiviteter": ["Fisketur", "Karaoke", "Skitur", "Bading", "Grilling", "Sjakk", "Fotball", "Baking", "Shopping", "Fjelltur",
     "Yoga", "Gaming", "Maling", "Klatring", "Sykling", "Padling", "Quiz", "Dans", "Snorkling", "Bowling",
-    "Strikking", "Jogging", "Paintball", "Golf", "Kortspill", "Hagearbeid", "Fotografering", "Ridning", "Seiling", "Camping"]
+    "Strikking", "Jogging", "Paintball", "Golf", "Kortspill", "Hagearbeid", "Fotografering", "Ridning", "Seiling", "Camping"],
+  "Sport": ["Langrenn", "Håndball", "Tennis", "Boksing", "Friidrett", "Svømming", "Hopp", "Skiskyting", "Curling", "Ishockey",
+    "Turn", "Bryting", "Badminton", "Volleyball", "Basketball", "Maraton", "Triatlon", "Klatring", "Judo", "Fekting",
+    "Roing", "Skateboard", "Surfing", "Alpint", "Bordtennis", "Dart", "Biljard", "Motocross", "Rally", "Sjakk-VM"],
+  "Film & TV": ["Frost", "Star Wars", "Harry Potter", "Skam", "Paradise Hotel", "Ringenes Herre", "Batman", "Titanic", "Shrek", "Farmen",
+    "James Bond", "Jurassic Park", "Mesternes mester", "Exit", "Stranger Things", "Hjemme alene", "Løvenes konge", "Avatar", "Kompani Lauritzen", "Pirates of the Caribbean",
+    "Spider-Man", "Maskorama", "Nytt på nytt", "Squid Game", "Toy Story", "Melodi Grand Prix", "Flåklypa", "Olsenbanden", "Side om side", "Friends"],
+  "Japan": ["Sushi", "Shinkansen", "Fuji-fjellet", "Kimono", "Samurai", "Ninja", "Karaoke", "Manga", "Pokémon", "Ramen",
+    "Tempel", "Geisha", "Sumo", "Onsen", "Sakura", "Tokyo", "Kyoto", "Bambus", "Torii-port", "Matcha",
+    "Vending-maskin", "Hello Kitty", "Origami", "Karate", "Wasabi", "Bento", "Tamagotchi", "Nintendo", "Godzilla", "Chopsticks"],
+  "Yrker": ["Lege", "Rørlegger", "Pilot", "Frisør", "Bonde", "Politi", "Kokk", "Lærer", "Snekker", "Tannlege",
+    "Brannmann", "Advokat", "Elektriker", "Sykepleier", "Bussjåfør", "Fotograf", "Journalist", "Prest", "Fisker", "Dommer",
+    "Veterinær", "Arkitekt", "Postbud", "Vekter", "Megler", "Baker", "Optiker", "Psykolog", "Renholder", "Influencer"]
 };
 const CATNAMES = Object.keys(WORDS);
 
@@ -254,7 +266,9 @@ function showWord() {
   if (p.isImposter) {
     $("reveal-card").innerHTML = `
       <div class="word imposter">Du er IMPOSTER 🤫</div>
-      <div class="cat">Kategorien er <b>${game.cat}</b> — bløff deg gjennom!</div>`;
+      <div class="cat">Kategorien er <b>${game.cat}</b></div>
+      <div class="cat">💡 Hint: ordet starter på <b>${game.word[0]}</b> og har <b>${game.word.replace(/[^A-Za-zÆØÅæøå0-9é]/g, "").length}</b> tegn</div>
+      <div class="cat" style="margin-top:4px">Bløff deg gjennom!</div>`;
   } else {
     $("reveal-card").innerHTML = `
       <div class="word">${game.word}</div>

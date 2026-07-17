@@ -70,6 +70,14 @@
     padding: 5px 11px; border-radius: 999px;
   }
 
+  h2.sect {
+    font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 19px;
+    margin: 22px 0 2px; display: flex; align-items: center; gap: 9px;
+  }
+  h2.sect:first-child { margin-top: 0; }
+  h2.sect .jp { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: 2px; }
+  h2.sect::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
   footer { margin-top: 48px; font-size: 11.5px; color: var(--muted); text-align: center; line-height: 1.7; }
   footer .jp { font-family: "Zen Kaku Gothic New", sans-serif; color: var(--accent); letter-spacing: 3px; }
 </style>
@@ -81,6 +89,8 @@
   </header>
 
   <main>
+    <h2 class="sect">🎌 Japan-turen<span class="jp">旅</span></h2>
+
     <a class="game" href="kyoto/">
       <div class="emoji">⛩️</div>
       <div>
@@ -98,6 +108,8 @@
       </div>
       <div class="arrow">→</div>
     </a>
+
+    <h2 class="sect">🎲 Spill<span class="jp">遊</span></h2>
 
     <a class="game" href="janiv/">
       <div class="emoji">🃏</div>
@@ -140,6 +152,24 @@
       <div>
         <h2>Kryssord</h2>
         <p>Tre norske minibrett — vannrett og loddrett, med feilsjekk og fasit.</p>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="game" href="ofc/">
+      <div class="emoji">♠️</div>
+      <div>
+        <h2>OFC Poker</h2>
+        <p>Open Face Chinese — komplette regler pluss poeng/penge-tracker med graf.</p>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="game" href="loveletter/">
+      <div class="emoji">💌</div>
+      <div>
+        <h2>Love Letter</h2>
+        <p>Poengteller med gunst-poeng, seiersrekker, statistikk og matchball-varsel.</p>
       </div>
       <div class="arrow">→</div>
     </a>

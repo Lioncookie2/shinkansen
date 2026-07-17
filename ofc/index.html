@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4ede0">
+<title>OFC Poker · MilesTech Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #f4ede0; --card: #fcf8f0; --border: rgba(60,45,30,.12);
+    --text: #27221b; --muted: #8a7f6d; --accent: #c73e3a; --indigo: #33506b;
+    --matcha: #5a8f5d; --gold: #b8860b;
+    --grad: linear-gradient(135deg, #c73e3a, #e0632e);
+    --shadow: 0 8px 30px rgba(90,70,40,.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center;
+    padding: calc(16px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom)); }
+  button { font-family: inherit; cursor: pointer; }
+  h1 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 28px; text-align: center; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { text-align: center; font-size: 12.5px; color: var(--muted); margin: 4px 0 14px; }
+  a.back { position: absolute; top: calc(18px + env(safe-area-inset-top)); left: 14px; text-decoration: none;
+    color: var(--muted); font-size: 13px; font-weight: 600; }
+
+  .wrap { width: 100%; max-width: 440px; }
+  /* faner */
+  #tabs { display: flex; gap: 8px; margin-bottom: 14px; justify-content: center; }
+  #tabs button { padding: 9px 18px; border-radius: 999px; border: 1.5px solid var(--border);
+    background: none; font-size: 13.5px; font-weight: 800; color: var(--muted); }
+  #tabs button.sel { border-color: var(--accent); color: var(--accent); background: rgba(199,62,58,.06); }
+
+  .tabpane { display: none; }
+  .tabpane.show { display: block; }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .panel h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-bottom: 12px; }
+  .panel h3 { font-size: 15.5px; font-weight: 800; margin-bottom: 4px; }
+  .panel p { font-size: 13.5px; color: #6b5f4d; line-height: 1.6; }
+  .panel .tip { margin-top: 9px; font-size: 12.5px; font-weight: 600; color: var(--accent);
+    background: rgba(199,62,58,.07); border-radius: 10px; padding: 7px 11px; line-height: 1.5; }
+
+  /* regler: hånd-diagram */
+  .handrow { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+  .handrow .cards { display: flex; gap: 3px; }
+  .mini { width: 26px; height: 36px; border-radius: 5px; background: #fff; border: 1px solid var(--border);
+    display: grid; place-items: center; font-size: 13px; font-weight: 800; color: var(--indigo);
+    box-shadow: 0 1px 3px rgba(90,70,40,.15); }
+  .handrow .lbl { font-size: 12.5px; color: var(--muted); }
+  .handrow .lbl b { color: var(--text); }
+
+  table.roy { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.roy th { text-align: left; padding: 5px 6px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  table.roy td { padding: 5px 6px; border-top: 1px solid var(--border); color: #55493a; }
+  table.roy td:last-child, table.roy th:last-child { text-align: right; font-weight: 700; color: var(--indigo); }
+
+  /* tracker */
+  .name-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .name-row input { flex: 1; border: 1px solid var(--border); background: rgba(60,45,30,.03);
+    border-radius: 12px; padding: 11px 14px; font-size: 15px; font-family: inherit; outline: none; color: var(--text); }
+  .name-row input:focus { border-color: var(--accent); }
+  .name-row button { width: 46px; border-radius: 12px; border: none; background: var(--grad); color: #fff; font-size: 22px; }
+  .plist { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ptag { display: flex; align-items: center; gap: 6px; background: rgba(51,80,107,.08);
+    color: var(--indigo); font-size: 13px; font-weight: 700; padding: 7px 8px 7px 13px; border-radius: 999px; }
+  .ptag button { background: none; border: none; color: var(--indigo); opacity: .6; font-size: 15px; padding: 0 4px; }
+  .stake-row { display: flex; align-items: center; justify-content: space-between; }
+  .stake-row .lbl { font-size: 14px; font-weight: 600; }
+  .stake-row .lbl small { display: block; font-weight: 500; color: var(--muted); font-size: 11.5px; }
+  .stake-row input { width: 80px; border: 1px solid var(--border); background: rgba(60,45,30,.03);
+    border-radius: 10px; padding: 8px; font-size: 15px; text-align: center; font-family: inherit; outline: none; }
+  .bigbtn { width: 100%; padding: 15px; border: none; border-radius: 16px; background: var(--grad);
+    color: #fff; font-size: 16px; font-weight: 800; box-shadow: var(--shadow); }
+  .bigbtn:disabled { opacity: .4; }
+
+  /* poengregistrering */
+  .scorein { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .scorein .nm { font-size: 14.5px; font-weight: 700; flex: 1; }
+  .scorein .ctrl { display: flex; align-items: center; gap: 6px; }
+  .scorein button { width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--border);
+    background: none; font-size: 17px; font-weight: 800; color: var(--indigo); }
+  .scorein input { width: 62px; border: 1px solid var(--border); background: rgba(60,45,30,.03);
+    border-radius: 10px; padding: 7px; font-size: 15px; text-align: center; font-family: inherit; outline: none; }
+  #sum-warn { font-size: 12px; font-weight: 600; text-align: center; min-height: 18px; margin: 2px 0 8px; }
+
+  /* stillingen */
+  .standrow { display: flex; align-items: center; justify-content: space-between; padding: 9px 4px; border-bottom: 1px solid var(--border); }
+  .standrow:last-child { border-bottom: none; }
+  .standrow .nm { font-size: 14.5px; font-weight: 700; }
+  .standrow .nm small { color: var(--muted); font-weight: 500; margin-left: 6px; font-size: 11.5px; }
+  .standrow .pts { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 19px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .standrow .pts small { font-size: 11px; color: var(--muted); font-weight: 600; display: block; text-align: right; }
+  .pos { color: var(--matcha); } .neg { color: var(--accent); }
+
+  #chart { width: 100%; }
+  #chart text { font-family: "Inter", sans-serif; }
+  .topbtns { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
+  .topbtns button { background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+  .statgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .stat { background: rgba(51,80,107,.06); border-radius: 12px; padding: 10px; text-align: center; }
+  .stat .v { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 17px; font-weight: 900; color: var(--indigo); }
+  .stat .k { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+</style>
+</head>
+<body>
+<a class="back" href="../">← Games</a>
+<h1>OFC Poker <span>♠️</span></h1>
+<div class="sub">Open Face Chinese — regler og poeng/penge-tracker</div>
+
+<div class="wrap">
+  <div id="tabs">
+    <button data-t="rules" class="sel">📖 Regler</button>
+    <button data-t="track">📊 Tracker</button>
+  </div>
+
+  <!-- ============ REGLER ============ -->
+  <div class="tabpane show" id="pane-rules">
+    <div class="panel">
+      <h3>Oppsett</h3>
+      <p><b>2–3 spillere</b> med én kortstokk (52 kort). Hver spiller skal ende opp med <b>13 kort</b> fordelt på tre rekker som legges åpent på bordet:</p>
+      <div style="height:10px"></div>
+      <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Topp</b> — 3 kort (svakest)</div></div>
+      <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Midten</b> — 5 kort</div></div>
+      <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Bunn</b> — 5 kort (sterkest)</div></div>
+      <div class="tip">⚠️ Gylden regel: Bunn ≥ Midten ≥ Topp. Bryter du rekkefølgen «fouler» du — hånden er død og du taper 6 poeng til hver motstander (+ deres royalties).</div>
+    </div>
+
+    <div class="panel">
+      <h3>Spillets gang</h3>
+      <p><b>1.</b> Alle får <b>5 kort</b> først og plasserer dem valgfritt i de tre rekkene — plasserte kort kan ALDRI flyttes.<br><br>
+      <b>2. Klassisk:</b> deretter trekker man <b>ett og ett kort</b> (8 runder) til alle har 13.<br>
+      <b>Pineapple</b> (den vanligste varianten): man trekker <b>3 kort, beholder 2 og kaster 1</b> skjult — 4 runder à 3 kort.<br><br>
+      <b>3.</b> Når alle har lagt 13 kort, sammenlignes rekkene mot hver motstander: topp mot topp, midt mot midt, bunn mot bunn.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Poeng (1–6-scoring)</h3>
+      <p>Mot hver motstander: <b>+1 poeng per rekke du vinner</b>. Vinner du alle tre («scoop») får du <b>+3 bonus</b> — altså 6 poeng totalt. I tillegg kommer royalties (bonuser for sterke hender) som legges oppå, og de utbetales selv om du taper rekka.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Royalties — bunn</h3>
+      <table class="roy">
+        <tr><th>Hånd</th><th>Poeng</th></tr>
+        <tr><td>Straight</td><td>+2</td></tr>
+        <tr><td>Flush</td><td>+4</td></tr>
+        <tr><td>Hus (full house)</td><td>+6</td></tr>
+        <tr><td>Fire like</td><td>+10</td></tr>
+        <tr><td>Straight flush</td><td>+15</td></tr>
+        <tr><td>Royal flush</td><td>+25</td></tr>
+      </table>
+      <div class="tip">Midten gir <b>dobbel royalty</b> av bunn (hus i midten = +12), og der gir også tre like +2.</div>
+    </div>
+
+    <div class="panel">
+      <h3>Royalties — topp (3 kort)</h3>
+      <table class="roy">
+        <tr><th>Hånd</th><th>Poeng</th></tr>
+        <tr><td>Par i 6-ere</td><td>+1</td></tr>
+        <tr><td>… ett poeng mer per valør (7=+2 … ess=+9)</td><td>+2–9</td></tr>
+        <tr><td>Tre like (222 = +10, opp til AAA)</td><td>+10–22</td></tr>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h3>Fantasyland 🌈</h3>
+      <p>Klarer du <b>par i damer eller bedre på topp</b> (uten å foule), spiller du neste hånd i «Fantasyland»: du får alle <b>14 kort på én gang</b> (legg 13, kast 1) mens de andre spiller vanlig. Ny QQ+/tre like på topp, fire like+ i bunn = bli værende i Fantasyland.</p>
+      <div class="tip">💡 Spiller dere om penger: bli enige om kroneverdi per poeng FØR start — f.eks. 1 kr/poeng. Trackeren regner om for dere.</div>
+    </div>
+  </div>
+
+  <!-- ============ TRACKER ============ -->
+  <div class="tabpane" id="pane-track">
+    <!-- oppsett -->
+    <div id="t-setup">
+      <div class="panel">
+        <h2>Spillere (2–4)</h2>
+        <div class="name-row">
+          <input id="pname" placeholder="Navn …" maxlength="14" autocomplete="off">
+          <button id="padd">+</button>
+        </div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="panel">
+        <div class="stake-row">
+          <div class="lbl">Kroner per poeng<small>0 = spill bare om poeng</small></div>
+          <input id="stake" type="number" value="0" min="0" step="0.5">
+        </div>
+      </div>
+      <button class="bigbtn" id="start" disabled>Start tracking</button>
+    </div>
+
+    <!-- aktiv -->
+    <div id="t-game" style="display:none">
+      <div class="topbtns">
+        <button id="undo">↩ Angre siste</button>
+        <button id="newgame">Nytt spill</button>
+      </div>
+
+      <div class="panel">
+        <h2 id="round-title">Runde 1 — poeng per spiller</h2>
+        <div id="scoreins"></div>
+        <div id="sum-warn"></div>
+        <button class="bigbtn" id="saveround">Lagre runden</button>
+      </div>
+
+      <div class="panel">
+        <h2>Stillingen</h2>
+        <div id="standings"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Utvikling</h2>
+        <svg id="chart"></svg>
+        <div id="legend" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Statistikk</h2>
+        <div class="statgrid" id="stats"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const LS = "ofc-v1";
+const COLORS = ["#c73e3a", "#33506b", "#5a8f5d", "#b8860b"];
+
+/* faner */
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.remove("sel"));
+  b.classList.add("sel");
+  $("pane-rules").classList.toggle("show", b.dataset.t === "rules");
+  $("pane-track").classList.toggle("show", b.dataset.t === "track");
+  if (b.dataset.t === "track" && G) drawChart();
+});
+
+/* oppsett */
+const names = [];
+function renderNames() {
+  $("plist").innerHTML = names.map((n, i) => `<span class="ptag">${n}<button data-i="${i}">✕</button></span>`).join("");
+  $("plist").querySelectorAll("button").forEach(b => b.onclick = () => { names.splice(+b.dataset.i, 1); renderNames(); });
+  $("start").disabled = names.length < 2;
+}
+function addName() {
+  const n = $("pname").value.trim();
+  if (!n || names.length >= 4) return;
+  names.push(n); $("pname").value = ""; renderNames(); $("pname").focus();
+}
+$("padd").onclick = addName;
+$("pname").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
+
+/* G = { players, stake, rounds: [[p1,p2,...], ...] } */
+let G = null;
+function save() { localStorage.setItem(LS, JSON.stringify(G)); }
+function load() {
+  try { const g = JSON.parse(localStorage.getItem(LS)); if (g && g.players?.length) return g; } catch (e) {}
+  return null;
+}
+$("start").onclick = () => {
+  G = { players: [...names], stake: parseFloat($("stake").value) || 0, rounds: [] };
+  save(); showGame();
+};
+
+function totals() {
+  return G.players.map((_, i) => G.rounds.reduce((s, r) => s + (r[i] || 0), 0));
+}
+
+function showGame() {
+  $("t-setup").style.display = "none";
+  $("t-game").style.display = "block";
+  render();
+}
+
+function render() {
+  $("round-title").textContent = `Runde ${G.rounds.length + 1} — poeng per spiller`;
+  // inputfelt
+  $("scoreins").innerHTML = G.players.map((n, i) => `
+    <div class="scorein">
+      <span class="nm" style="color:${COLORS[i]}">${n}</span>
+      <div class="ctrl">
+        <button data-i="${i}" data-d="-1">−</button>
+        <input id="in-${i}" type="number" value="0" step="1">
+        <button data-i="${i}" data-d="1">+</button>
+      </div>
+    </div>`).join("");
+  $("scoreins").querySelectorAll("button").forEach(b => b.onclick = () => {
+    const inp = $("in-" + b.dataset.i);
+    inp.value = (parseInt(inp.value, 10) || 0) + (+b.dataset.d);
+    checkSum();
+  });
+  $("scoreins").querySelectorAll("input").forEach(inp => inp.oninput = checkSum);
+  checkSum();
+  renderStandings();
+  drawChart();
+  renderStats();
+}
+
+function checkSum() {
+  const vals = G.players.map((_, i) => parseInt($("in-" + i)?.value, 10) || 0);
+  const sum = vals.reduce((a, b) => a + b, 0);
+  const w = $("sum-warn");
+  if (sum === 0) { w.textContent = "✓ summen er 0 — det stemmer i OFC"; w.style.color = "var(--matcha)"; }
+  else { w.textContent = `Summen er ${sum > 0 ? "+" : ""}${sum} — i OFC skal poengene summere til 0`; w.style.color = "var(--gold)"; }
+}
+
+$("saveround").onclick = () => {
+  const vals = G.players.map((_, i) => parseInt($("in-" + i).value, 10) || 0);
+  if (vals.every(v => v === 0)) { alert("Fyll inn poengene først."); return; }
+  G.rounds.push(vals);
+  save(); render();
+};
+$("undo").onclick = () => { if (G.rounds.length) { G.rounds.pop(); save(); render(); } };
+$("newgame").onclick = () => {
+  if (!confirm("Starte nytt spill? Alt slettes.")) return;
+  localStorage.removeItem(LS); G = null;
+  $("t-game").style.display = "none";
+  $("t-setup").style.display = "block";
+};
+
+function renderStandings() {
+  const t = totals();
+  const order = G.players.map((_, i) => i).sort((a, b) => t[b] - t[a]);
+  const lead = t[order[0]];
+  $("standings").innerHTML = order.map((i, pos) => {
+    const diff = t[i] - lead;
+    const money = G.stake ? ` · ${(t[i] * G.stake).toFixed(0)} kr` : "";
+    return `<div class="standrow">
+      <span class="nm" style="color:${COLORS[i]}">${pos === 0 && G.rounds.length ? "👑 " : ""}${G.players[i]}
+        <small>${pos > 0 ? Math.abs(diff) + " bak" : G.rounds.length ? "leder" : ""}</small></span>
+      <span class="pts ${t[i] > 0 ? "pos" : t[i] < 0 ? "neg" : ""}">${t[i] > 0 ? "+" : ""}${t[i]}<small>poeng${money}</small></span>
+    </div>`;
+  }).join("");
+}
+
+function drawChart() {
+  const svg = d3.select("#chart");
+  svg.selectAll("*").remove();
+  const W = Math.min(404, document.querySelector(".wrap").clientWidth - 36), H = 200;
+  svg.attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%").attr("height", H);
+  const m = { t: 10, r: 12, b: 22, l: 30 };
+
+  // kumulative serier (starter på 0)
+  const series = G.players.map((_, i) => {
+    let acc = 0;
+    return [0, ...G.rounds.map(r => (acc += (r[i] || 0)))];
+  });
+  const nR = G.rounds.length;
+  const allVals = series.flat();
+  const x = d3.scaleLinear().domain([0, Math.max(1, nR)]).range([m.l, W - m.r]);
+  const y = d3.scaleLinear().domain([Math.min(0, d3.min(allVals)), Math.max(1, d3.max(allVals))]).nice().range([H - m.b, m.t]);
+
+  // akser
+  svg.append("g").attr("transform", `translate(0,${H - m.b})`)
+    .call(d3.axisBottom(x).ticks(Math.min(nR, 8)).tickFormat(d3.format("d")))
+    .call(g => { g.selectAll("text").attr("fill", "#8a7f6d").attr("font-size", 9); g.selectAll("line,path").attr("stroke", "#d8cdb8"); });
+  svg.append("g").attr("transform", `translate(${m.l},0)`)
+    .call(d3.axisLeft(y).ticks(5))
+    .call(g => { g.selectAll("text").attr("fill", "#8a7f6d").attr("font-size", 9); g.selectAll("line,path").attr("stroke", "#d8cdb8"); });
+  // null-linje
+  svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0))
+    .attr("stroke", "#b8ab92").attr("stroke-dasharray", "3 3");
+
+  const line = d3.line().x((d, j) => x(j)).y(d => y(d)).curve(d3.curveMonotoneX);
+  series.forEach((s, i) => {
+    svg.append("path").datum(s).attr("fill", "none").attr("stroke", COLORS[i]).attr("stroke-width", 2.5).attr("d", line);
+    // sirkel på siste punkt
+    svg.append("circle").attr("cx", x(s.length - 1)).attr("cy", y(s[s.length - 1])).attr("r", 4)
+      .attr("fill", COLORS[i]).attr("stroke", "#fcf8f0").attr("stroke-width", 1.5);
+  });
+
+  $("legend").innerHTML = G.players.map((n, i) =>
+    `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i]};margin-right:5px"></span>${n}</span>`).join("");
+}
+
+function renderStats() {
+  const t = totals();
+  const nR = G.rounds.length;
+  // største enkeltrunde
+  let bigVal = 0, bigWho = "—";
+  G.rounds.forEach(r => r.forEach((v, i) => { if (v > bigVal) { bigVal = v; bigWho = G.players[i]; } }));
+  // mest stabile (lavest varians) — eller snitt per runde for leder
+  const order = G.players.map((_, i) => i).sort((a, b) => t[b] - t[a]);
+  const leadAvg = nR ? (t[order[0]] / nR).toFixed(1) : "—";
+  const swing = nR ? Math.max(...t) - Math.min(...t) : 0;
+  $("stats").innerHTML = `
+    <div class="stat"><div class="v">${nR}</div><div class="k">runder</div></div>
+    <div class="stat"><div class="v">${bigVal ? "+" + bigVal : "—"}</div><div class="k">beste runde${bigVal ? "<br>" + bigWho : ""}</div></div>
+    <div class="stat"><div class="v">${swing}</div><div class="k">spenn topp–bunn</div></div>`;
+}
+
+const saved = load();
+if (saved) { G = saved; showGame(); }
+</script>
+</body>
+</html>

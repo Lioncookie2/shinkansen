@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4ede0">
+<title>Love Letter · MilesTech Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4ede0; --card: #fcf8f0; --border: rgba(60,45,30,.12);
+    --text: #27221b; --muted: #8a7f6d; --accent: #c73e3a; --indigo: #33506b;
+    --matcha: #5a8f5d; --gold: #b8860b;
+    --grad: linear-gradient(135deg, #c73e3a, #e0632e);
+    --shadow: 0 8px 30px rgba(90,70,40,.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center;
+    padding: calc(16px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom)); }
+  button { font-family: inherit; cursor: pointer; }
+  h1 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 28px; text-align: center; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { text-align: center; font-size: 12.5px; color: var(--muted); margin: 4px 0 16px; }
+  a.back { position: absolute; top: calc(18px + env(safe-area-inset-top)); left: 14px; text-decoration: none;
+    color: var(--muted); font-size: 13px; font-weight: 600; }
+
+  .screen { width: 100%; max-width: 420px; display: none; }
+  .screen.show { display: block; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .panel h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-bottom: 12px; }
+  .name-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .name-row input { flex: 1; border: 1px solid var(--border); background: rgba(60,45,30,.03);
+    border-radius: 12px; padding: 11px 14px; font-size: 15px; font-family: inherit; outline: none; color: var(--text); }
+  .name-row input:focus { border-color: var(--accent); }
+  .name-row button { width: 46px; border-radius: 12px; border: none; background: var(--grad); color: #fff; font-size: 22px; }
+  .plist { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ptag { display: flex; align-items: center; gap: 6px; background: rgba(51,80,107,.08);
+    color: var(--indigo); font-size: 13px; font-weight: 700; padding: 7px 8px 7px 13px; border-radius: 999px; }
+  .ptag button { background: none; border: none; color: var(--indigo); opacity: .6; font-size: 15px; padding: 0 4px; }
+  .imp-row { display: flex; align-items: center; justify-content: space-between; }
+  .imp-row .lbl { font-size: 14px; font-weight: 600; }
+  .imp-row .lbl small { display: block; font-weight: 500; color: var(--muted); font-size: 11.5px; }
+  .stepper { display: flex; align-items: center; gap: 14px; }
+  .stepper button { width: 38px; height: 38px; border-radius: 12px; border: 1.5px solid var(--border);
+    background: none; font-size: 20px; font-weight: 800; color: var(--indigo); }
+  .stepper .n { font-size: 20px; font-weight: 900; font-family: "Zen Kaku Gothic New", sans-serif; min-width: 22px; text-align: center; }
+  .bigbtn { width: 100%; padding: 15px; border: none; border-radius: 16px; background: var(--grad);
+    color: #fff; font-size: 16px; font-weight: 800; box-shadow: var(--shadow); }
+  .bigbtn:disabled { opacity: .4; }
+  .bigbtn.ghost { background: none; border: 1.5px solid var(--border); color: var(--muted); box-shadow: none; margin-top: 10px; }
+
+  /* spillskjerm */
+  .prow {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 10px; position: relative; overflow: hidden;
+  }
+  .prow.leader { border-color: rgba(184,134,11,.5); }
+  .prow .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .prow .name { font-size: 16px; font-weight: 800; }
+  .prow .hearts { font-size: 15px; letter-spacing: 2px; }
+  .prow .bar { height: 8px; border-radius: 6px; background: rgba(60,45,30,.08); overflow: hidden; margin-bottom: 10px; }
+  .prow .fill { height: 100%; border-radius: 6px; background: var(--grad); transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .prow .meta { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; }
+  .winbtn {
+    width: 100%; padding: 10px; border-radius: 12px; border: 1.5px dashed rgba(199,62,58,.4);
+    background: rgba(199,62,58,.05); color: var(--accent); font-size: 13.5px; font-weight: 700;
+  }
+  #topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  #target-info { font-size: 12px; font-weight: 700; color: var(--muted); }
+  #topbar .actions { display: flex; gap: 8px; }
+  #topbar button { background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+
+  #champion { text-align: center; padding: 18px; display: none; }
+  #champion.show { display: block; }
+  #champion .big { font-size: 52px; }
+  #champion h3 { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 24px; font-weight: 900; margin: 6px 0 2px; }
+  #champion p { font-size: 13px; color: var(--muted); }
+
+  .statgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .stat { background: rgba(51,80,107,.06); border-radius: 12px; padding: 10px; text-align: center; }
+  .stat .v { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 20px; font-weight: 900; color: var(--indigo); }
+  .stat .k { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+  .hist { font-size: 13px; color: #6b5f4d; padding: 6px 2px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+  .hist:last-child { border-bottom: none; }
+  .hist b { color: var(--accent); }
+</style>
+</head>
+<body>
+<a class="back" href="../">← Games</a>
+<h1>Love Letter <span>💌</span></h1>
+<div class="sub">Poengteller — vinn runder, samle gunst-poeng, vinn prinsessens hjerte</div>
+
+<!-- SETUP -->
+<div class="screen show" id="s-setup">
+  <div class="panel">
+    <h2>Spillere (2–6)</h2>
+    <div class="name-row">
+      <input id="pname" placeholder="Navn …" maxlength="14" autocomplete="off">
+      <button id="padd">+</button>
+    </div>
+    <div class="plist" id="plist"></div>
+  </div>
+  <div class="panel">
+    <div class="imp-row">
+      <div class="lbl">Poeng for å vinne<small id="target-hint">Offisielt: 2 sp = 7 · 3 sp = 5 · 4+ sp = 4</small></div>
+      <div class="stepper">
+        <button id="t-minus">−</button>
+        <span class="n" id="t-n">7</span>
+        <button id="t-plus">+</button>
+      </div>
+    </div>
+  </div>
+  <button class="bigbtn" id="start" disabled>Start spillet</button>
+</div>
+
+<!-- SPILL -->
+<div class="screen" id="s-game">
+  <div id="topbar">
+    <span id="target-info"></span>
+    <div class="actions">
+      <button id="undo">↩ Gå tilbake</button>
+      <button id="newgame">Nytt spill</button>
+    </div>
+  </div>
+
+  <div class="panel" id="champion">
+    <div class="big">👑</div>
+    <h3 id="champ-name"></h3>
+    <p id="champ-sub"></p>
+  </div>
+
+  <div id="rows"></div>
+
+  <div class="panel">
+    <h2>Statistikk</h2>
+    <div class="statgrid" id="stats"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Rundehistorikk</h2>
+    <div id="histlist"><div class="hist" style="border:none;color:var(--muted)">Ingen runder spilt ennå</div></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const LS = "loveletter-v1";
+
+const names = [];
+let target = 7, targetTouched = false;
+
+function officialTarget(n) { return n <= 2 ? 7 : n === 3 ? 5 : 4; }
+function renderNames() {
+  $("plist").innerHTML = names.map((n, i) => `<span class="ptag">${n}<button data-i="${i}">✕</button></span>`).join("");
+  $("plist").querySelectorAll("button").forEach(b => b.onclick = () => { names.splice(+b.dataset.i, 1); renderNames(); });
+  if (!targetTouched) { target = officialTarget(names.length); $("t-n").textContent = target; }
+  $("start").disabled = names.length < 2;
+}
+function addName() {
+  const n = $("pname").value.trim();
+  if (!n || names.length >= 6) return;
+  names.push(n); $("pname").value = ""; renderNames(); $("pname").focus();
+}
+$("padd").onclick = addName;
+$("pname").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
+$("t-minus").onclick = () => { target = Math.max(1, target - 1); targetTouched = true; $("t-n").textContent = target; };
+$("t-plus").onclick = () => { target = Math.min(15, target + 1); targetTouched = true; $("t-n").textContent = target; };
+
+/* G = { players: [navn], target, wins: [vinnerIndex per runde] } */
+let G = null;
+function save() { localStorage.setItem(LS, JSON.stringify(G)); }
+function load() {
+  try { const g = JSON.parse(localStorage.getItem(LS)); if (g && g.players?.length) return g; } catch (e) {}
+  return null;
+}
+
+$("start").onclick = () => {
+  G = { players: [...names], target, wins: [] };
+  save(); showGame();
+};
+
+function tokens(i) { return G.wins.filter(w => w === i).length; }
+function streak(i) { // nåværende seiersrekke
+  let s = 0;
+  for (let j = G.wins.length - 1; j >= 0 && G.wins[j] === i; j--) s++;
+  return s;
+}
+function champion() { return G.players.findIndex((_, i) => tokens(i) >= G.target); }
+
+function showGame() {
+  $("s-setup").classList.remove("show");
+  $("s-game").classList.add("show");
+  render();
+}
+
+function render() {
+  const champ = champion();
+  $("target-info").textContent = `Først til ${G.target} 💌 · ${G.wins.length} runder spilt`;
+
+  const max = Math.max(0, ...G.players.map((_, i) => tokens(i)));
+  $("rows").innerHTML = G.players.map((n, i) => {
+    const t = tokens(i);
+    const lead = t === max && max > 0;
+    return `<div class="prow ${lead ? "leader" : ""}">
+      <div class="top">
+        <span class="name">${lead && max > 0 ? "👑 " : ""}${n}</span>
+        <span class="hearts">${"💌".repeat(t) || "<span style='color:var(--muted);font-size:12px'>ingen ennå</span>"}</span>
+      </div>
+      <div class="bar"><div class="fill" style="width:${Math.min(100, t / G.target * 100)}%"></div></div>
+      <div class="meta">${t}/${G.target} poeng${streak(i) >= 2 ? ` · 🔥 ${streak(i)} på rad` : ""}${t === G.target - 1 ? " · 🎯 matchball!" : ""}</div>
+      ${champ === -1 ? `<button class="winbtn" data-i="${i}">💘 ${n} vant runden</button>` : ""}
+    </div>`;
+  }).join("");
+  $("rows").querySelectorAll(".winbtn").forEach(b => b.onclick = () => {
+    G.wins.push(+b.dataset.i); save(); render();
+  });
+
+  // mester
+  if (champ !== -1) {
+    $("champion").classList.add("show");
+    $("champ-name").textContent = `${G.players[champ]} vant prinsessens hjerte!`;
+    $("champ-sub").textContent = `${G.target} gunst-poeng på ${G.wins.length} runder`;
+  } else $("champion").classList.remove("show");
+
+  // statistikk
+  const rounds = G.wins.length;
+  const winRates = G.players.map((n, i) => rounds ? Math.round(tokens(i) / rounds * 100) : 0);
+  const bestIdx = winRates.indexOf(Math.max(...winRates));
+  let longestStreak = 0, lsWho = "—", cur = 0;
+  for (let j = 0; j < G.wins.length; j++) {
+    cur = (j > 0 && G.wins[j] === G.wins[j-1]) ? cur + 1 : 1;
+    if (cur > longestStreak) { longestStreak = cur; lsWho = G.players[G.wins[j]]; }
+  }
+  const sorted = G.players.map((_, i) => tokens(i)).sort((a, b) => b - a);
+  const gap = sorted.length > 1 ? sorted[0] - sorted[1] : 0;
+  $("stats").innerHTML = `
+    <div class="stat"><div class="v">${rounds ? winRates[bestIdx] + "%" : "—"}</div><div class="k">beste vinnerandel${rounds ? "<br>" + G.players[bestIdx] : ""}</div></div>
+    <div class="stat"><div class="v">${longestStreak > 1 ? longestStreak : "—"}</div><div class="k">lengste rekke${longestStreak > 1 ? "<br>" + lsWho : ""}</div></div>
+    <div class="stat"><div class="v">${gap}</div><div class="k">luke ned til nr. 2</div></div>`;
+
+  // historikk (nyeste først)
+  $("histlist").innerHTML = G.wins.length
+    ? [...G.wins].reverse().map((w, ri) =>
+        `<div class="hist"><span>Runde ${G.wins.length - ri}</span><span><b>${G.players[w]}</b> vant 💌</span></div>`).join("")
+    : `<div class="hist" style="border:none;color:var(--muted)">Ingen runder spilt ennå</div>`;
+}
+
+$("undo").onclick = () => { if (G.wins.length) { G.wins.pop(); save(); render(); } };
+$("newgame").onclick = () => {
+  if (!confirm("Starte nytt spill? Poengene nullstilles.")) return;
+  localStorage.removeItem(LS);
+  G = null;
+  $("s-game").classList.remove("show");
+  $("s-setup").classList.add("show");
+};
+
+const saved = load();
+if (saved) { G = saved; showGame(); }
+</script>
+</body>
+</html>

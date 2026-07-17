@@ -107,55 +107,92 @@ function ScoreChart({ series, maxRound }) {
   );
 }
 
+/* Spiller hele historikken på nytt fra rundenes råpoeng — gjør redigering trygt */
+function replay(roster, rounds) {
+  const state = {}; // id -> { score, out }
+  roster.forEach((pl) => { state[pl.id] = { score: 0, out: false }; });
+  const chronological = rounds.map((round) => {
+    const entries = [];
+    roster.forEach((pl) => {
+      const st = state[pl.id];
+      if (st.out) return;
+      const add = round.adds[pl.id] ?? 0;
+      const rawTotal = st.score + add;
+      const result = applyJanivRule(rawTotal);
+      entries.push({
+        name: pl.name, add, before: st.score, rawTotal,
+        after: result.score, triggered: result.score !== rawTotal && !result.out, out: result.out,
+      });
+      st.score = result.score; st.out = result.out;
+    });
+    return { id: round.id, entries };
+  });
+  return { chronological, state };
+}
+
 function JanivApp() {
-  const [players, setPlayers] = useState([]);
+  const [roster, setRoster] = useState([]);       // [{id, name}]
+  const [rounds, setRounds] = useState([]);       // [{id, adds: {playerId: tall}}] i spilt rekkefølge
   const [newName, setNewName] = useState("");
   const [roundInputs, setRoundInputs] = useState({});
-  const [history, setHistory] = useState([]);
   const [showTable, setShowTable] = useState(false);
+  const [editIdx, setEditIdx] = useState(null);   // index i rounds som redigeres
+  const [editVals, setEditVals] = useState({});
 
-  const chronological = useMemo(() => [...history].reverse(), [history]);
+  const { chronological, state } = useMemo(() => replay(roster, rounds), [roster, rounds]);
+  const players = useMemo(() => roster.map((pl) => ({ ...pl, ...state[pl.id] })), [roster, state]);
+  const history = useMemo(() => [...chronological].reverse(), [chronological]);
   const series = useMemo(() => buildSeries(players, chronological), [players, chronological]);
 
   const addPlayer = () => {
     const name = newName.trim();
     if (!name) return;
-    setPlayers((p) => [...p, { id: Date.now(), name, score: 0, out: false }]);
+    setRoster((p) => [...p, { id: Date.now(), name }]);
     setNewName("");
   };
 
   const removePlayer = (id) => {
-    setPlayers((p) => p.filter((pl) => pl.id !== id));
+    setRoster((p) => p.filter((pl) => pl.id !== id));
     setRoundInputs((r) => { const copy = { ...r }; delete copy[id]; return copy; });
   };
 
   const setRoundInput = (id, val) => setRoundInputs((r) => ({ ...r, [id]: val }));
 
   const playRound = () => {
-    const roundLog = [];
-    setPlayers((prev) =>
-      prev.map((pl) => {
-        if (pl.out) return pl;
-        const raw = roundInputs[pl.id];
-        const add = raw === undefined || raw === "" ? 0 : parseInt(raw, 10) || 0;
-        const rawTotal = pl.score + add;
-        const result = applyJanivRule(rawTotal);
-        roundLog.push({
-          name: pl.name, add, before: pl.score, rawTotal,
-          after: result.score, triggered: result.score !== rawTotal && !result.out, out: result.out,
-        });
-        return { ...pl, score: result.score, out: result.out };
-      })
-    );
-    setHistory((h) => [{ id: Date.now(), entries: roundLog }, ...h]);
+    const adds = {};
+    roster.forEach((pl) => {
+      if (state[pl.id]?.out) return;
+      const raw = roundInputs[pl.id];
+      adds[pl.id] = raw === undefined || raw === "" ? 0 : parseInt(raw, 10) || 0;
+    });
+    setRounds((r) => [...r, { id: Date.now(), adds }]);
     setRoundInputs({});
   };
 
-  const resetAll = () => {
-    setPlayers((p) => p.map((pl) => ({ ...pl, score: 0, out: false })));
-    setHistory([]);
-    setRoundInputs({});
+  const undoLast = () => setRounds((r) => r.slice(0, -1));
+
+  const startEdit = (histIdx) => { // histIdx er i nyeste-først-listen
+    const roundIdx = rounds.length - 1 - histIdx;
+    const vals = {};
+    roster.forEach((pl) => { vals[pl.id] = String(rounds[roundIdx].adds[pl.id] ?? ""); });
+    setEditVals(vals);
+    setEditIdx(roundIdx);
   };
+  const saveEdit = () => {
+    setRounds((r) => r.map((round, i) => {
+      if (i !== editIdx) return round;
+      const adds = {};
+      roster.forEach((pl) => {
+        const raw = editVals[pl.id];
+        if (raw === undefined || raw === "") return;
+        adds[pl.id] = parseInt(raw, 10) || 0;
+      });
+      return { ...round, adds };
+    }));
+    setEditIdx(null);
+  };
+
+  const resetAll = () => { setRounds([]); setRoundInputs({}); setEditIdx(null); };
 
   const colorFor = (score) => {
     if (score >= 80) return "from-rose-500 to-red-600";
@@ -298,30 +335,68 @@ function JanivApp() {
 
         {history.length > 0 && (
           <div>
-            <h2 className="text-slate-400 text-sm font-semibold mb-2 uppercase tracking-wide">Historikk</h2>
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-              {history.map((round) => (
-                <div key={round.id} className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3 text-sm">
-                  {withCrowns(round.entries).map((e, i) => (
-                    <div key={i} className="flex justify-between text-slate-300">
-                      <span className="flex items-center gap-1">
-                        {e.crowned && <Crown size={13} className="text-amber-400 shrink-0" />}
-                        {e.name} {e.add !== 0 && <span className="text-slate-500">+{e.add}</span>}
-                      </span>
-                      <span>
-                        {e.before} →{" "}
-                        {e.out ? (
-                          <span className="text-rose-400 font-semibold">{e.rawTotal} (UTE)</span>
-                        ) : e.triggered ? (
-                          <span className="text-amber-400 font-semibold">{e.rawTotal} ⤵ {e.after}</span>
-                        ) : (
-                          <span className="font-semibold">{e.after}</span>
-                        )}
-                      </span>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-slate-400 text-sm font-semibold uppercase tracking-wide">Historikk</h2>
+              <button onClick={undoLast} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-amber-400 transition-colors">
+                <RotateCcw size={13} /> Gå tilbake (angre siste runde)
+              </button>
+            </div>
+            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              {history.map((round, hIdx) => {
+                const roundIdx = rounds.length - 1 - hIdx;
+                const isEditing = editIdx === roundIdx;
+                return (
+                  <div key={round.id} className={`bg-slate-800/40 border rounded-xl p-3 text-sm ${isEditing ? "border-emerald-500/70" : "border-slate-700/60"}`}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs text-slate-500 font-semibold">Runde {roundIdx + 1}</span>
+                      {!isEditing && (
+                        <button onClick={() => startEdit(hIdx)} className="text-xs text-slate-500 hover:text-emerald-400 transition-colors">
+                          ✏️ Rediger
+                        </button>
+                      )}
                     </div>
-                  ))}
-                </div>
-              ))}
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        {roster.map((pl) => (
+                          <div key={pl.id} className="flex items-center justify-between gap-2">
+                            <span className="text-slate-300">{pl.name}</span>
+                            <input
+                              type="number"
+                              value={editVals[pl.id] ?? ""}
+                              onChange={(e) => setEditVals((v) => ({ ...v, [pl.id]: e.target.value }))}
+                              className="w-20 bg-slate-900/70 border border-slate-700 rounded-lg px-2 py-1.5 text-center outline-none focus:border-emerald-400"
+                            />
+                          </div>
+                        ))}
+                        <div className="flex gap-2 pt-1">
+                          <button onClick={saveEdit} className="flex-1 bg-emerald-500 hover:bg-emerald-400 rounded-lg py-1.5 text-sm font-bold text-slate-900">Lagre</button>
+                          <button onClick={() => setEditIdx(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 rounded-lg py-1.5 text-sm">Avbryt</button>
+                        </div>
+                        <p className="text-xs text-slate-500">Poengene under regnes ut på nytt automatisk.</p>
+                      </div>
+                    ) : (
+                      withCrowns(round.entries).map((e, i) => (
+                        <div key={i} className="flex justify-between text-slate-300">
+                          <span className="flex items-center gap-1">
+                            {e.crowned && <Crown size={13} className="text-amber-400 shrink-0" />}
+                            {e.name} {e.add !== 0 && <span className="text-slate-500">+{e.add}</span>}
+                          </span>
+                          <span>
+                            {e.before} →{" "}
+                            {e.out ? (
+                              <span className="text-rose-400 font-semibold">{e.rawTotal} (UTE)</span>
+                            ) : e.triggered ? (
+                              <span className="text-amber-400 font-semibold">{e.rawTotal} ⤵ {e.after}</span>
+                            ) : (
+                              <span className="font-semibold">{e.after}</span>
+                            )}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
