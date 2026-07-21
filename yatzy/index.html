@@ -88,6 +88,15 @@
   .bonus-hit { color: var(--matcha); }
   .bonus-miss { color: var(--muted); font-size: 10.5px; font-weight: 600; }
   .crown { font-size: 13px; }
+  tr.saverow td { background: rgba(90,143,93,.09); font-weight: 800; padding: 8px 10px; }
+  tr.saverow td.cat { background: #e9f0e6; }
+  .pace { display: block; font-size: 10px; font-weight: 700; color: #c3b592; margin-top: 1px; }
+  thead th.turn { color: var(--accent); }
+  thead th .turntag { display: block; font-size: 8.5px; font-weight: 800; color: var(--accent); letter-spacing: .5px; }
+  #turn-banner { text-align: center; font-size: 14px; font-weight: 700; color: var(--indigo); margin-bottom: 12px; min-height: 20px; }
+  #turn-banner b { color: var(--accent); }
+  .save-pos { color: var(--matcha); }
+  .save-neg { color: var(--accent); }
 
   /* -------- picker -------- */
   #overlay { position: fixed; inset: 0; background: rgba(39,34,27,.4); z-index: 90; display: none; }
@@ -104,6 +113,13 @@
   .val:active { background: rgba(51,80,107,.1); }
   .val.strike { color: var(--accent); border-color: rgba(199,62,58,.3); }
   .val.undo { color: var(--muted); font-size: 13px; font-weight: 700; }
+  #pk-rolls { margin-bottom: 16px; }
+  #pk-rolls .rlabel { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; font-weight: 600; line-height: 1.4; }
+  #pk-rolls .rbtns { display: flex; gap: 6px; flex-wrap: wrap; }
+  #pk-rolls .rb { min-width: 42px; padding: 9px 8px; border-radius: 11px; border: 1.5px solid var(--border);
+    background: none; font-size: 15px; font-weight: 800; color: var(--indigo); }
+  #pk-rolls .rb.sel { border-color: var(--matcha); background: rgba(90,143,93,.1); color: #3c6b3f; }
+  #pk-rolls .reffect { font-size: 12px; font-weight: 700; margin-top: 9px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -117,6 +133,13 @@
     <div class="mode-row">
       <button class="mode-btn sel" id="mode-bound">Klassisk (bunden)<small>Fyll ut ovenfra og ned</small></button>
       <button class="mode-btn" id="mode-free">Fri<small>Velg rad selv hver runde</small></button>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Sparing (valgfritt)</h2>
+    <div class="mode-row">
+      <button class="mode-btn sel" id="save-off">Av<small>Vanlige regler</small></button>
+      <button class="mode-btn" id="save-on">På<small>Spar ubrukte kast · kjøp ekstra (2×)</small></button>
     </div>
   </div>
   <div class="panel">
@@ -134,8 +157,12 @@
   <div class="wrap">
     <div class="toolbar">
       <span class="mode-pill" id="mode-pill"></span>
-      <button id="new-game">Nytt spill</button>
+      <div style="display:flex;gap:8px">
+        <button id="toggle-total">Skjul totalt</button>
+        <button id="new-game">Nytt spill</button>
+      </div>
     </div>
+    <div id="turn-banner"></div>
     <div class="tablewrap"><table id="tbl"></table></div>
   </div>
 </div>
@@ -144,6 +171,7 @@
 <div id="picker">
   <h3 id="pk-cat"></h3>
   <div class="for">Poeng for <b id="pk-player"></b></div>
+  <div id="pk-rolls" style="display:none"></div>
   <div class="vals" id="pk-vals"></div>
 </div>
 
@@ -208,14 +236,44 @@ function leaderIdx() {
   state.players.forEach((p, i) => { const t = total(p); if (t > best) { best = t; bi = i; } });
   return state.players.filter(p => filledCount(p) > 0).length ? bi : -1;
 }
+function currentTurnIdx() { // hvem sin tur: den med færrest utfylte ruter (ligger bakerst)
+  if (gameOver()) return -1;
+  let best = Infinity, bi = 0;
+  state.players.forEach((p, i) => { const f = filledCount(p); if (f < best) { best = f; bi = i; } });
+  return bi;
+}
+function upperPar(catId) { return CATS.find(c => c.id === catId).upper * 3; } // "standard": tre av hver
+/* sparing: 3 kast gratis. Færre → spar. Flere → kjøp til 2× pris. */
+function bankDelta(rolls) { return rolls <= 3 ? (3 - rolls) : -(rolls - 3) * 2; }
+function bank(p) {
+  if (!state.saving) return 0;
+  return Object.values(p.rolls || {}).reduce((s, r) => s + bankDelta(r), 0);
+}
+/* Foreslåtte "standard-verdier" for bonus, justert for overskudd/underskudd.
+   Fyller du 4 seksere (overskudd) synker kravene på de andre. */
+function paceMap(p) {
+  const emptyUp = UPPER_IDS.filter(id => p.scores[id] === undefined);
+  const remaining = BONUS_LIMIT - upperSum(p);
+  const totalWeight = emptyUp.reduce((s, id) => s + upperPar(id), 0);
+  const m = {};
+  emptyUp.forEach(id => {
+    const c = CATS.find(x => x.id === id);
+    let need = totalWeight > 0 && remaining > 0 ? remaining * (upperPar(id) / totalWeight) : 0;
+    m[id] = Math.max(0, Math.min(c.upper * 5, Math.round(need)));
+  });
+  return m;
+}
 
 /* ---------- setup-UI ---------- */
 let mode = "bound";
 const names = [];
 const $ = id => document.getElementById(id);
 
+let saving = false;
 $("mode-bound").onclick = () => { mode = "bound"; $("mode-bound").classList.add("sel"); $("mode-free").classList.remove("sel"); };
 $("mode-free").onclick = () => { mode = "free"; $("mode-free").classList.add("sel"); $("mode-bound").classList.remove("sel"); };
+$("save-off").onclick = () => { saving = false; $("save-off").classList.add("sel"); $("save-on").classList.remove("sel"); };
+$("save-on").onclick = () => { saving = true; $("save-on").classList.add("sel"); $("save-off").classList.remove("sel"); };
 
 function renderNames() {
   $("plist").innerHTML = names.map((n, i) =>
@@ -232,7 +290,7 @@ $("padd").onclick = addName;
 $("pname").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
 
 $("start-btn").onclick = () => {
-  state = { mode, players: names.map(n => ({ name: n, scores: {} })) };
+  state = { mode, saving, showTotal: true, players: names.map(n => ({ name: n, scores: {}, rolls: {} })) };
   save(); showBoard();
 };
 
@@ -240,31 +298,43 @@ $("start-btn").onclick = () => {
 function showBoard() {
   $("setup").style.display = "none";
   $("board").style.display = "block";
-  $("mode-pill").textContent = state.mode === "bound" ? "Klassisk · bunden" : "Fri rekkefølge";
+  let pill = state.mode === "bound" ? "Klassisk · bunden" : "Fri rekkefølge";
+  if (state.saving) pill += " · sparing";
+  $("mode-pill").textContent = pill;
+  $("toggle-total").textContent = state.showTotal ? "Skjul totalt" : "Vis totalt";
   renderBoard();
 }
 
-function cellButton(p, pi, cat) {
+function cellButton(p, pi, cat, pm) {
   const v = p.scores[cat.id];
   if (v === "X") return `<button class="cellbtn struck" data-p="${pi}" data-c="${cat.id}">0</button>`;
   if (typeof v === "number") return `<button class="cellbtn filled" data-p="${pi}" data-c="${cat.id}">${v}</button>`;
+  const paceHint = (cat.upper && pm && pm[cat.id] !== undefined)
+    ? `<span class="pace">${pm[cat.id] === 0 ? "✓" : "≈" + pm[cat.id]}</span>` : "";
   if (state.mode === "bound" && nextBoundCat(p) !== cat.id)
-    return `<button class="cellbtn locked" disabled>·</button>`;
-  return `<button class="cellbtn open" data-p="${pi}" data-c="${cat.id}">＋</button>`;
+    return `<button class="cellbtn locked" disabled>·${paceHint}</button>`;
+  return `<button class="cellbtn open" data-p="${pi}" data-c="${cat.id}">＋${paceHint}</button>`;
 }
 
 function renderBoard() {
   const ps = state.players;
-  const li = gameOver() || ps.some(p => filledCount(p) > 2) ? leaderIdx() : -1;
+  const turnI = currentTurnIdx();
+  const li = state.showTotal && (gameOver() || ps.some(p => filledCount(p) > 2)) ? leaderIdx() : -1;
+  const pms = ps.map(p => paceMap(p));
+
+  $("turn-banner").innerHTML = turnI >= 0 ? `🎲 Nå er det <b>${ps[turnI].name}</b> sin tur` : "🏁 Blokka er full";
+
   let h = "<thead><tr><th style='text-align:left;padding-left:12px'>Kategori</th>";
   ps.forEach((p, i) => {
-    h += `<th class="${i === li ? "leader" : ""}">${i === li ? '<span class="crown">👑</span> ' : ""}${p.name}</th>`;
+    const cls = [i === li ? "leader" : "", i === turnI ? "turn" : ""].filter(Boolean).join(" ");
+    const tag = i === turnI ? '<span class="turntag">DIN TUR</span>' : "";
+    h += `<th class="${cls}">${i === li ? '<span class="crown">👑</span> ' : ""}${p.name}${tag}</th>`;
   });
   h += "</tr></thead><tbody>";
 
   CATS.forEach(cat => {
     h += `<tr><td class="cat">${cat.name}${cat.hint ? `<small>${cat.hint}</small>` : ""}</td>`;
-    ps.forEach((p, pi) => h += `<td class="cell">${cellButton(p, pi, cat)}</td>`);
+    ps.forEach((p, pi) => h += `<td class="cell">${cellButton(p, pi, cat, pms[pi])}</td>`);
     h += "</tr>";
     if (cat.id === "n6") {
       h += `<tr class="sumrow"><td class="cat">Sum <small>bonus ved ${BONUS_LIMIT}+</small></td>`;
@@ -274,7 +344,13 @@ function renderBoard() {
         let note;
         if (hasBonus(p)) note = `<div class="bonus-hit">✓ Bonus +${BONUS}</div>`;
         else if (upDone) note = `<div class="bonus-miss">ingen bonus</div>`;
-        else note = `<div class="bonus-miss">${BONUS_LIMIT - s} unna bonus</div>`;
+        else {
+          const parFilled = UPPER_IDS.filter(id => typeof p.scores[id] === "number").reduce((a, id) => a + upperPar(id), 0);
+          const diff = s - parFilled;
+          const buf = diff > 0 ? ` · <span class="save-pos">+${diff} i bank</span>`
+            : diff < 0 ? ` · <span class="save-neg">${diff} bak</span>` : "";
+          note = `<div class="bonus-miss">${BONUS_LIMIT - s} unna${buf}</div>`;
+        }
         h += `<td class="cell">${s}${note}</td>`;
       });
       h += "</tr>";
@@ -282,8 +358,18 @@ function renderBoard() {
   });
 
   h += `<tr class="totalrow"><td class="cat">TOTALT</td>`;
-  ps.forEach(p => h += `<td class="cell">${total(p)}</td>`);
-  h += "</tr></tbody>";
+  ps.forEach(p => h += `<td class="cell">${state.showTotal ? total(p) : "•••"}</td>`);
+  h += "</tr>";
+
+  if (state.saving) {
+    h += `<tr class="saverow"><td class="cat">Sparing <small>ubrukte kast</small></td>`;
+    ps.forEach(p => {
+      const b = bank(p);
+      h += `<td class="cell"><span class="${b > 0 ? "save-pos" : b < 0 ? "save-neg" : ""}">${b} kast</span></td>`;
+    });
+    h += "</tr>";
+  }
+  h += "</tbody>";
   $("tbl").innerHTML = h;
 
   $("tbl").querySelectorAll(".cellbtn[data-p]").forEach(b => b.onclick = () => openPicker(+b.dataset.p, b.dataset.c));
@@ -295,13 +381,15 @@ function renderBoard() {
 }
 
 /* ---------- picker ---------- */
-let pkP = null, pkC = null;
+let pkP = null, pkC = null, pkRolls = 3;
 function openPicker(pi, catId) {
   pkP = pi; pkC = catId;
   const cat = CATS.find(c => c.id === catId);
   const p = state.players[pi];
   $("pk-cat").textContent = cat.name;
   $("pk-player").textContent = p.name;
+  pkRolls = (state.saving && p.rolls && p.rolls[catId] !== undefined) ? p.rolls[catId] : 3;
+  renderRolls();
   let h = cat.vals.map(v => `<button class="val" data-v="${v}">${v}</button>`).join("");
   h += `<button class="val strike" data-v="X">Stryk ✕</button>`;
   if (p.scores[catId] !== undefined) h += `<button class="val undo" data-v="UNDO">Angre ↩</button>`;
@@ -309,16 +397,45 @@ function openPicker(pi, catId) {
   $("pk-vals").querySelectorAll(".val").forEach(b => b.onclick = () => pick(b.dataset.v));
   $("picker").classList.add("show"); $("overlay").classList.add("show");
 }
+function renderRolls() {
+  const box = $("pk-rolls");
+  if (!state.saving) { box.style.display = "none"; box.innerHTML = ""; return; }
+  box.style.display = "block";
+  const p = state.players[pkP];
+  const existingDelta = (p.rolls && p.rolls[pkC] !== undefined) ? bankDelta(p.rolls[pkC]) : 0;
+  const bankOther = bank(p) - existingDelta;                 // bank uten denne cellen
+  const maxRolls = 3 + Math.floor(Math.max(0, bankOther) / 2); // kan bare kjøpe det du har råd til
+  if (pkRolls > maxRolls) pkRolls = maxRolls;
+  let btns = "";
+  for (let r = 1; r <= maxRolls; r++) btns += `<button class="rb ${r === pkRolls ? "sel" : ""}" data-r="${r}">${r}</button>`;
+  const d = bankDelta(pkRolls);
+  const eff = d > 0 ? `<span class="save-pos">+${d} kast spart</span>`
+    : d < 0 ? `<span class="save-neg">${d} kast (kjøpte ${(-d / 2)} ekstra)</span>`
+    : "nøytralt (3 kast)";
+  box.innerHTML = `<div class="rlabel">Hvor mange kast brukte du? 3 er gratis · ekstra kast koster 2× fra banken.</div>
+    <div class="rbtns">${btns}</div>
+    <div class="reffect">${eff} · bank etterpå: <b>${bankOther + d}</b> kast</div>`;
+  box.querySelectorAll(".rb").forEach(b => b.onclick = () => { pkRolls = +b.dataset.r; renderRolls(); });
+}
 function closePicker() { $("picker").classList.remove("show"); $("overlay").classList.remove("show"); }
 $("overlay").onclick = closePicker;
 
 function pick(v) {
   const p = state.players[pkP];
-  if (v === "UNDO") delete p.scores[pkC];
-  else if (v === "X") p.scores[pkC] = "X";
-  else p.scores[pkC] = +v;
+  if (v === "UNDO") { delete p.scores[pkC]; if (p.rolls) delete p.rolls[pkC]; }
+  else {
+    if (v === "X") p.scores[pkC] = "X"; else p.scores[pkC] = +v;
+    if (state.saving) { p.rolls = p.rolls || {}; p.rolls[pkC] = pkRolls; }
+  }
   save(); closePicker(); renderBoard();
 }
+
+/* ---------- vis/skjul totalt ---------- */
+$("toggle-total").onclick = () => {
+  state.showTotal = !state.showTotal;
+  $("toggle-total").textContent = state.showTotal ? "Skjul totalt" : "Vis totalt";
+  save(); renderBoard();
+};
 
 /* ---------- nytt spill ---------- */
 $("new-game").onclick = () => {
@@ -331,7 +448,13 @@ $("new-game").onclick = () => {
 
 /* ---------- init ---------- */
 const saved = load();
-if (saved) { state = saved; showBoard(); }
+if (saved) {
+  state = saved;
+  if (state.saving === undefined) state.saving = false;
+  if (state.showTotal === undefined) state.showTotal = true;
+  state.players.forEach(p => { if (!p.rolls) p.rolls = {}; });
+  showBoard();
+}
 </script>
 </body>
 </html>

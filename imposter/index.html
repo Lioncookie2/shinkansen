@@ -150,34 +150,99 @@
 
 <script>
 "use strict";
+/* Hvert ord: ["Ord", "hint"] — hintet er ETT relatert ord som lar imposteren
+   bløffe uten å vite det eksakte ordet. */
 const WORDS = {
-  "Mat & drikke": ["Taco", "Brunost", "Sushi", "Grandiosa", "Kebab", "Vaffel", "Kanelbolle", "Fiskekake", "Kaviar", "Lakris",
-    "Pølse i brød", "Rømmegrøt", "Kakao", "Softis", "Popcorn", "Ramen", "Pannekake", "Kjøttkaker", "Smoothie", "Boller",
-    "Pizza", "Fårikål", "Risgrøt", "Solo", "Melkesjokolade", "Knekkebrød", "Makrell i tomat", "Lefse", "Slush", "Espresso"],
-  "Dyr": ["Elg", "Pingvin", "Flamingo", "Piggsvin", "Delfin", "Ulv", "Hamster", "Kamel", "Blekksprut", "Rein",
-    "Papegøye", "Isbjørn", "Maur", "Hval", "Flaggermus", "Sjiraff", "Krokodille", "Ekorn", "Manet", "Sau",
-    "Kenguru", "Ugle", "Rev", "Sel", "Vepse", "Skilpadde", "Panda", "Torsk", "Høne", "Måke"],
-  "Steder": ["Japan", "Badeland", "Hytta", "Nordpolen", "Kino", "IKEA", "Sykehus", "Flyplass", "Skole", "Strand",
-    "Paris", "Bensinstasjon", "Bibliotek", "Fengsel", "Teltur", "Slottet", "Bowlinghall", "Legevakta", "Tivoli", "Kirke",
-    "New York", "Frisøren", "Treningssenter", "Campingplass", "Museum", "Svømmehall", "Tokyo", "Butikken", "Fjellet", "Restaurant"],
-  "Ting": ["Tannbørste", "Paraply", "Ladekabel", "Sovepose", "Fjernkontroll", "Støvsuger", "Solbriller", "Bankkort", "Lommelykt", "Yogamatte",
-    "Termos", "Hodetelefoner", "Boksåpner", "Refleksvest", "Nøkkelknippe", "Vaffeljern", "Skateboard", "Plaster", "Kikkert", "Grill",
-    "Passord", "Minibank", "Heisekran", "Trampoline", "Snøfreser", "Kaffetrakter", "Drone", "Ski", "Telt", "Mikrobølgeovn"],
-  "Aktiviteter": ["Fisketur", "Karaoke", "Skitur", "Bading", "Grilling", "Sjakk", "Fotball", "Baking", "Shopping", "Fjelltur",
-    "Yoga", "Gaming", "Maling", "Klatring", "Sykling", "Padling", "Quiz", "Dans", "Snorkling", "Bowling",
-    "Strikking", "Jogging", "Paintball", "Golf", "Kortspill", "Hagearbeid", "Fotografering", "Ridning", "Seiling", "Camping"],
-  "Sport": ["Langrenn", "Håndball", "Tennis", "Boksing", "Friidrett", "Svømming", "Hopp", "Skiskyting", "Curling", "Ishockey",
-    "Turn", "Bryting", "Badminton", "Volleyball", "Basketball", "Maraton", "Triatlon", "Klatring", "Judo", "Fekting",
-    "Roing", "Skateboard", "Surfing", "Alpint", "Bordtennis", "Dart", "Biljard", "Motocross", "Rally", "Sjakk-VM"],
-  "Film & TV": ["Frost", "Star Wars", "Harry Potter", "Skam", "Paradise Hotel", "Ringenes Herre", "Batman", "Titanic", "Shrek", "Farmen",
-    "James Bond", "Jurassic Park", "Mesternes mester", "Exit", "Stranger Things", "Hjemme alene", "Løvenes konge", "Avatar", "Kompani Lauritzen", "Pirates of the Caribbean",
-    "Spider-Man", "Maskorama", "Nytt på nytt", "Squid Game", "Toy Story", "Melodi Grand Prix", "Flåklypa", "Olsenbanden", "Side om side", "Friends"],
-  "Japan": ["Sushi", "Shinkansen", "Fuji-fjellet", "Kimono", "Samurai", "Ninja", "Karaoke", "Manga", "Pokémon", "Ramen",
-    "Tempel", "Geisha", "Sumo", "Onsen", "Sakura", "Tokyo", "Kyoto", "Bambus", "Torii-port", "Matcha",
-    "Vending-maskin", "Hello Kitty", "Origami", "Karate", "Wasabi", "Bento", "Tamagotchi", "Nintendo", "Godzilla", "Chopsticks"],
-  "Yrker": ["Lege", "Rørlegger", "Pilot", "Frisør", "Bonde", "Politi", "Kokk", "Lærer", "Snekker", "Tannlege",
-    "Brannmann", "Advokat", "Elektriker", "Sykepleier", "Bussjåfør", "Fotograf", "Journalist", "Prest", "Fisker", "Dommer",
-    "Veterinær", "Arkitekt", "Postbud", "Vekter", "Megler", "Baker", "Optiker", "Psykolog", "Renholder", "Influencer"]
+  "Mat & drikke": [
+    ["Taco", "fredag"], ["Sushi", "ris"], ["Pizza", "Italia"], ["Vaffel", "hjerte"],
+    ["Kebab", "nattmat"], ["Grandiosa", "frossen"], ["Brunost", "geit"], ["Pølse", "grill"],
+    ["Softis", "sommer"], ["Kakao", "varm"], ["Popcorn", "kino"], ["Fårikål", "høst"],
+    ["Lakris", "salt"], ["Smoothie", "blender"], ["Pannekake", "syltetøy"], ["Ramen", "nudler"],
+    ["Kanelbolle", "gjær"], ["Espresso", "koffein"], ["Rømmegrøt", "sukker"], ["Sushiruller", "sjømat"]],
+  "Dyr": [
+    ["Elg", "skog"], ["Pingvin", "is"], ["Delfin", "hav"], ["Ulv", "flokk"],
+    ["Isbjørn", "Arktis"], ["Sjiraff", "hals"], ["Krokodille", "tenner"], ["Kenguru", "hopp"],
+    ["Ugle", "natt"], ["Rev", "slu"], ["Panda", "bambus"], ["Blekksprut", "blekk"],
+    ["Flaggermus", "vinge"], ["Kamel", "ørken"], ["Hval", "sang"], ["Papegøye", "farge"],
+    ["Ekorn", "nøtt"], ["Sau", "ull"], ["Krokofant", "myte"], ["Piggsvin", "pigg"]],
+  "Steder": [
+    ["Japan", "øy"], ["Badeland", "sklie"], ["Hytta", "peis"], ["Kino", "popcorn"],
+    ["IKEA", "kjøttbolle"], ["Sykehus", "hvit"], ["Flyplass", "bagasje"], ["Skole", "lekser"],
+    ["Strand", "sand"], ["Paris", "tårn"], ["Bibliotek", "stille"], ["Fengsel", "gitter"],
+    ["Tivoli", "karusell"], ["Kirke", "klokke"], ["Museum", "gammelt"], ["Svømmehall", "klor"],
+    ["Fjellet", "topp"], ["Restaurant", "meny"], ["Kjøpesenter", "handle"], ["Zoo", "bur"]],
+  "Ting": [
+    ["Paraply", "regn"], ["Ladekabel", "strøm"], ["Sovepose", "camping"], ["Fjernkontroll", "knapp"],
+    ["Støvsuger", "surr"], ["Solbriller", "sol"], ["Lommelykt", "mørkt"], ["Termos", "varm"],
+    ["Hodetelefoner", "musikk"], ["Refleksvest", "synlig"], ["Kikkert", "langt"], ["Grill", "kull"],
+    ["Drone", "fly"], ["Trampoline", "hopp"], ["Kaffetrakter", "morgen"], ["Ski", "snø"],
+    ["Telt", "leir"], ["Tannbørste", "puss"], ["Vaffeljern", "røre"], ["Nøkkel", "lås"]],
+  "Aktiviteter": [
+    ["Fisketur", "stang"], ["Karaoke", "synge"], ["Skitur", "spor"], ["Grilling", "kull"],
+    ["Sjakk", "brikke"], ["Fotball", "mål"], ["Baking", "ovn"], ["Shopping", "senter"],
+    ["Yoga", "matte"], ["Gaming", "skjerm"], ["Klatring", "tau"], ["Sykling", "pedal"],
+    ["Dans", "rytme"], ["Snorkling", "maske"], ["Bowling", "kjegle"], ["Fjelltur", "sekk"],
+    ["Camping", "bål"], ["Jogging", "løpesko"], ["Padling", "åre"], ["Maling", "pensel"]],
+  "Sport": [
+    ["Langrenn", "ski"], ["Håndball", "kast"], ["Tennis", "racket"], ["Boksing", "hanske"],
+    ["Svømming", "basseng"], ["Skiskyting", "gevær"], ["Curling", "kost"], ["Ishockey", "puck"],
+    ["Turn", "salto"], ["Volleyball", "nett"], ["Basketball", "kurv"], ["Maraton", "utholdenhet"],
+    ["Judo", "matte"], ["Fekting", "kårde"], ["Surfing", "bølge"], ["Alpint", "port"],
+    ["Golf", "kølle"], ["Dart", "blink"], ["Roing", "åre"], ["Bordtennis", "sprett"]],
+  "Film & TV": [
+    ["Frost", "snødronning"], ["Star Wars", "romskip"], ["Harry Potter", "trollmann"], ["Skam", "Oslo"],
+    ["Ringenes Herre", "ring"], ["Batman", "flaggermus"], ["Titanic", "skip"], ["Shrek", "troll"],
+    ["Farmen", "gård"], ["James Bond", "spion"], ["Jurassic Park", "dinosaur"], ["Stranger Things", "monster"],
+    ["Løvenes konge", "savanne"], ["Avatar", "blå"], ["Spider-Man", "edderkopp"], ["Squid Game", "lek"],
+    ["Toy Story", "leketøy"], ["Olsenbanden", "plan"], ["Kompani Lauritzen", "militær"], ["Flåklypa", "oppfinnelse"]],
+  "Japan": [
+    ["Sushi", "ris"], ["Shinkansen", "tog"], ["Fuji", "vulkan"], ["Kimono", "silke"],
+    ["Samurai", "sverd"], ["Ninja", "skygge"], ["Manga", "tegneserie"], ["Pokémon", "Pikachu"],
+    ["Ramen", "nudler"], ["Tempel", "bønn"], ["Geisha", "vifte"], ["Sumo", "bryter"],
+    ["Onsen", "bad"], ["Sakura", "blomst"], ["Tokyo", "storby"], ["Origami", "bretting"],
+    ["Karate", "slag"], ["Wasabi", "grønn"], ["Bonsai", "tre"], ["Matcha", "te"]],
+  "Yrker": [
+    ["Lege", "hvit"], ["Rørlegger", "vann"], ["Pilot", "cockpit"], ["Frisør", "saks"],
+    ["Bonde", "traktor"], ["Politi", "uniform"], ["Kokk", "kniv"], ["Lærer", "tavle"],
+    ["Snekker", "hammer"], ["Tannlege", "bor"], ["Brannmann", "slange"], ["Advokat", "rett"],
+    ["Elektriker", "ledning"], ["Sykepleier", "sprøyte"], ["Fotograf", "linse"], ["Prest", "kirke"],
+    ["Dommer", "kappe"], ["Veterinær", "dyr"], ["Astronaut", "romdrakt"], ["Baker", "deig"]],
+  "Musikk": [
+    ["Gitar", "streng"], ["Piano", "tangent"], ["Trommer", "rytme"], ["Fiolin", "bue"],
+    ["Mikrofon", "sang"], ["Trompet", "messing"], ["Rap", "rim"], ["Kor", "stemmer"],
+    ["Konsert", "publikum"], ["Platespiller", "vinyl"], ["Fløyte", "blåse"], ["DJ", "miks"],
+    ["Opera", "arie"], ["Bass", "dyp"], ["Noter", "ark"], ["Munnspill", "lomme"],
+    ["Cello", "gulv"], ["Dirigent", "taktstokk"], ["Saksofon", "jazz"], ["Ukulele", "Hawaii"]],
+  "Kjøretøy": [
+    ["Buss", "rute"], ["Tog", "skinne"], ["Fly", "vinge"], ["Sykkel", "pedal"],
+    ["Ambulanse", "sirene"], ["Traktor", "åker"], ["Ubåt", "dyp"], ["Helikopter", "rotor"],
+    ["Motorsykkel", "hjelm"], ["Ferge", "bil"], ["Sparkesykkel", "el"], ["Lastebil", "gods"],
+    ["Snøscooter", "vinter"], ["Rakett", "verdensrom"], ["Gravemaskin", "grave"], ["Kajakk", "padle"],
+    ["Trikk", "by"], ["Brannbil", "stige"], ["Taxi", "gul"], ["Ballong", "kurv"]],
+  "Natur & vær": [
+    ["Regnbue", "farger"], ["Torden", "lyn"], ["Snø", "hvit"], ["Vulkan", "lava"],
+    ["Foss", "vann"], ["Ørken", "sand"], ["Nordlys", "grønt"], ["Tsunami", "bølge"],
+    ["Regn", "paraply"], ["Sol", "varm"], ["Isbre", "sprekk"], ["Skog", "trær"],
+    ["Tåke", "grå"], ["Innsjø", "speil"], ["Vind", "kast"], ["Jordskjelv", "rist"],
+    ["Tornado", "trakt"], ["Hagl", "korn"], ["Solformørkelse", "skygge"], ["Sanddyne", "vind"]],
+  "Eventyr & figurer": [
+    ["Nisse", "jul"], ["Drage", "ild"], ["Havfrue", "hale"], ["Troll", "fjell"],
+    ["Heks", "kost"], ["Vampyr", "tenner"], ["Alv", "øre"], ["Ridder", "rustning"],
+    ["Enhjørning", "horn"], ["Spøkelse", "hvit"], ["Kjempe", "stor"], ["Fe", "vinger"],
+    ["Zombie", "grav"], ["Robot", "metall"], ["Prinsesse", "krone"], ["Varulv", "måne"],
+    ["Julenissen", "reinsdyr"], ["Trollmann", "stav"], ["Pirat", "skatt"], ["Superhelt", "kappe"]],
+  "Høytider": [
+    ["Jul", "gran"], ["Påske", "egg"], ["17. mai", "flagg"], ["Halloween", "gresskar"],
+    ["Bursdag", "kake"], ["Bryllup", "ring"], ["Nyttår", "rakett"], ["Karneval", "maske"],
+    ["Konfirmasjon", "gave"], ["Sankthans", "bål"], ["Advent", "lys"], ["Dåp", "kirke"],
+    ["Valentine", "hjerte"], ["Fastelavn", "bolle"], ["Lucia", "krone"], ["Morsdag", "blomst"],
+    ["Ramadan", "faste"], ["Diwali", "lys"], ["Nasjonaldag", "tog"], ["Skjærtorsdag", "ferie"]],
+  "Teknologi": [
+    ["Mobil", "skjerm"], ["Datamaskin", "tastatur"], ["Wi-Fi", "signal"], ["Kamera", "blits"],
+    ["Smartklokke", "puls"], ["Høyttaler", "lyd"], ["Skjerm", "piksel"], ["Robotstøvsuger", "runde"],
+    ["Nettbrett", "berøring"], ["Konsoll", "spill"], ["USB", "minne"], ["Router", "internett"],
+    ["VR-briller", "virtuell"], ["Printer", "blekk"], ["Batteri", "lade"], ["Hovedtelefon", "bluetooth"],
+    ["Musematte", "glatt"], ["Webkamera", "møte"], ["Ladepad", "trådløs"], ["Minnepenn", "port"]]
 };
 const CATNAMES = Object.keys(WORDS);
 
@@ -235,11 +300,11 @@ let passIdx = 0;
 function startRound() {
   const cat = [...selectedCats][Math.floor(Math.random() * selectedCats.size)];
   const list = WORDS[cat];
-  const word = list[Math.floor(Math.random() * list.length)];
+  const [word, hint] = list[Math.floor(Math.random() * list.length)];
   const impostors = new Set(shuffle(names.map((_, i) => i)).slice(0, impCount));
   game = {
     players: names.map((n, i) => ({ name: n, isImposter: impostors.has(i) })),
-    word, cat,
+    word, hint, cat,
     starterIdx: Math.floor(Math.random() * names.length)
   };
   passIdx = 0;
@@ -247,27 +312,28 @@ function startRound() {
 }
 
 /* ---------- pass telefonen ---------- */
+let hasSeen = false; // har spilleren sett ordet minst én gang denne turen
 function showPass() {
   show("s-pass");
   const p = game.players[passIdx];
   $("pass-name").textContent = "📱 " + p.name;
-  $("next-player").disabled = true;
   $("next-player").textContent = passIdx === game.players.length - 1 ? "Ferdig — start diskusjonen →" : "Gi videre →";
   resetCard();
 }
 function resetCard() {
-  revealed = false;
+  revealed = false; hasSeen = false;
+  $("next-player").disabled = true;
   $("reveal-card").innerHTML = `<div class="tap">Trykk og hold for å se ordet ditt</div>`;
 }
 function showWord() {
   if (revealed) return;
-  revealed = true;
+  revealed = true; hasSeen = true;
   const p = game.players[passIdx];
   if (p.isImposter) {
     $("reveal-card").innerHTML = `
       <div class="word imposter">Du er IMPOSTER 🤫</div>
       <div class="cat">Kategorien er <b>${game.cat}</b></div>
-      <div class="cat">💡 Hint: ordet starter på <b>${game.word[0]}</b> og har <b>${game.word.replace(/[^A-Za-zÆØÅæøå0-9é]/g, "").length}</b> tegn</div>
+      <div class="cat">💡 Hint: <b>${game.hint}</b></div>
       <div class="cat" style="margin-top:4px">Bløff deg gjennom!</div>`;
   } else {
     $("reveal-card").innerHTML = `
@@ -278,7 +344,10 @@ function showWord() {
 }
 function hideWord() {
   if (!revealed) return;
-  $("reveal-card").innerHTML = `<div class="tap">Ordet er skjult 👍 — trykk «Gi videre»</div>`;
+  revealed = false;
+  $("reveal-card").innerHTML = hasSeen
+    ? `<div class="tap">🔒 Skjult — hold inne igjen for å se på nytt, eller trykk «Gi videre»</div>`
+    : `<div class="tap">Trykk og hold for å se ordet ditt</div>`;
 }
 const card = $("reveal-card");
 card.addEventListener("pointerdown", e => { e.preventDefault(); showWord(); });
