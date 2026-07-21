@@ -93,6 +93,9 @@
   .pace { display: block; font-size: 10px; font-weight: 700; color: #c3b592; margin-top: 1px; }
   thead th.turn { color: var(--accent); }
   thead th .turntag { display: block; font-size: 8.5px; font-weight: 800; color: var(--accent); letter-spacing: .5px; }
+  thead th .bankchip { display: inline-block; margin-top: 3px; font-size: 10px; font-weight: 800;
+    padding: 2px 7px; border-radius: 999px; background: rgba(90,143,93,.14); }
+  thead th .bankchip.neg { background: rgba(199,62,58,.14); }
   #turn-banner { text-align: center; font-size: 14px; font-weight: 700; color: var(--indigo); margin-bottom: 12px; min-height: 20px; }
   #turn-banner b { color: var(--accent); }
   .save-pos { color: var(--matcha); }
@@ -115,11 +118,18 @@
   .val.undo { color: var(--muted); font-size: 13px; font-weight: 700; }
   #pk-rolls { margin-bottom: 16px; }
   #pk-rolls .rlabel { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; font-weight: 600; line-height: 1.4; }
-  #pk-rolls .rbtns { display: flex; gap: 6px; flex-wrap: wrap; }
-  #pk-rolls .rb { min-width: 42px; padding: 9px 8px; border-radius: 11px; border: 1.5px solid var(--border);
+  #pk-rolls .rbtns { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  #pk-rolls .rb { min-width: 40px; padding: 9px 8px; border-radius: 11px; border: 1.5px solid var(--border);
     background: none; font-size: 15px; font-weight: 800; color: var(--indigo); }
-  #pk-rolls .rb.sel { border-color: var(--matcha); background: rgba(90,143,93,.1); color: #3c6b3f; }
-  #pk-rolls .reffect { font-size: 12px; font-weight: 700; margin-top: 9px; color: var(--muted); }
+  #pk-rolls .rb.save { color: #3c6b3f; border-color: rgba(90,143,93,.35); }
+  #pk-rolls .rb.loan { color: var(--accent); border-color: rgba(199,62,58,.4); background: rgba(199,62,58,.04); }
+  #pk-rolls .rb.sel { box-shadow: 0 0 0 2px var(--matcha) inset; }
+  #pk-rolls .rb.strike { color: var(--accent); font-size: 12px; min-width: auto; padding: 9px 11px; }
+  #pk-rolls .rinput { width: 66px; border: 1.5px solid var(--border); border-radius: 11px;
+    padding: 9px 8px; font-size: 15px; font-weight: 800; text-align: center; font-family: inherit;
+    outline: none; color: var(--indigo); }
+  #pk-rolls .rinput:focus { border-color: var(--matcha); }
+  #pk-rolls .reffect { font-size: 12.5px; font-weight: 700; margin-top: 10px; color: var(--muted); line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -243,12 +253,16 @@ function currentTurnIdx() { // hvem sin tur: den med færrest utfylte ruter (lig
   return bi;
 }
 function upperPar(catId) { return CATS.find(c => c.id === catId).upper * 3; } // "standard": tre av hver
-/* sparing: 3 kast gratis. Færre → spar. Flere → kjøp til 2× pris. */
-function bankDelta(rolls) { return rolls <= 3 ? (3 - rolls) : -(rolls - 3) * 2; }
-function bank(p) {
-  if (!state.saving) return 0;
-  return Object.values(p.rolls || {}).reduce((s, r) => s + bankDelta(r), 0);
+/* sparing: 3 kast gratis. 0–2 kast → spar resten. Ekstra kast tas først fra
+   banken (1:1), deretter på lån til dobbel pris (2×). */
+function computeDelta(rolls, bankBefore) {
+  if (rolls <= 3) return 3 - rolls;               // spar ubrukte gratis-kast
+  const extra = rolls - 3;
+  const fromBank = Math.min(extra, Math.max(0, bankBefore)); // egne sparte kast, 1:1
+  const loan = extra - fromBank;                  // lån utover banken, 2×
+  return -(fromBank + loan * 2);
 }
+function pbank(p) { return state.saving ? (p.bank || 0) : 0; }
 /* Foreslåtte "standard-verdier" for bonus, justert for overskudd/underskudd.
    Fyller du 4 seksere (overskudd) synker kravene på de andre. */
 function paceMap(p) {
@@ -290,7 +304,8 @@ $("padd").onclick = addName;
 $("pname").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
 
 $("start-btn").onclick = () => {
-  state = { mode, saving, showTotal: true, players: names.map(n => ({ name: n, scores: {}, rolls: {} })) };
+  state = { mode, saving, showTotal: true,
+    players: names.map(n => ({ name: n, scores: {}, rolls: {}, deltas: {}, bank: 0 })) };
   save(); showBoard();
 };
 
@@ -328,7 +343,12 @@ function renderBoard() {
   ps.forEach((p, i) => {
     const cls = [i === li ? "leader" : "", i === turnI ? "turn" : ""].filter(Boolean).join(" ");
     const tag = i === turnI ? '<span class="turntag">DIN TUR</span>' : "";
-    h += `<th class="${cls}">${i === li ? '<span class="crown">👑</span> ' : ""}${p.name}${tag}</th>`;
+    let chip = "";
+    if (state.saving) {
+      const b = pbank(p);
+      chip = `<span class="bankchip ${b < 0 ? "neg" : ""}">⚡ ${b} kast</span>`;
+    }
+    h += `<th class="${cls}">${i === li ? '<span class="crown">👑</span> ' : ""}${p.name}${tag}${chip}</th>`;
   });
   h += "</tr></thead><tbody>";
 
@@ -359,17 +379,7 @@ function renderBoard() {
 
   h += `<tr class="totalrow"><td class="cat">TOTALT</td>`;
   ps.forEach(p => h += `<td class="cell">${state.showTotal ? total(p) : "•••"}</td>`);
-  h += "</tr>";
-
-  if (state.saving) {
-    h += `<tr class="saverow"><td class="cat">Sparing <small>ubrukte kast</small></td>`;
-    ps.forEach(p => {
-      const b = bank(p);
-      h += `<td class="cell"><span class="${b > 0 ? "save-pos" : b < 0 ? "save-neg" : ""}">${b} kast</span></td>`;
-    });
-    h += "</tr>";
-  }
-  h += "</tbody>";
+  h += "</tr></tbody>";
   $("tbl").innerHTML = h;
 
   $("tbl").querySelectorAll(".cellbtn[data-p]").forEach(b => b.onclick = () => openPicker(+b.dataset.p, b.dataset.c));
@@ -397,35 +407,77 @@ function openPicker(pi, catId) {
   $("pk-vals").querySelectorAll(".val").forEach(b => b.onclick = () => pick(b.dataset.v));
   $("picker").classList.add("show"); $("overlay").classList.add("show");
 }
+function bankBeforeCell() { // bankverdi uten denne cellens eventuelle gamle uttak
+  const p = state.players[pkP];
+  return pbank(p) - (p.deltas && p.deltas[pkC] !== undefined ? p.deltas[pkC] : 0);
+}
 function renderRolls() {
   const box = $("pk-rolls");
   if (!state.saving) { box.style.display = "none"; box.innerHTML = ""; return; }
   box.style.display = "block";
-  const p = state.players[pkP];
-  const existingDelta = (p.rolls && p.rolls[pkC] !== undefined) ? bankDelta(p.rolls[pkC]) : 0;
-  const bankOther = bank(p) - existingDelta;                 // bank uten denne cellen
-  const maxRolls = 3 + Math.floor(Math.max(0, bankOther) / 2); // kan bare kjøpe det du har råd til
-  if (pkRolls > maxRolls) pkRolls = maxRolls;
+  const bankBefore = bankBeforeCell();
+  const spendMax = 3 + Math.max(0, bankBefore);   // siste kast som bare bruker egen bank (1:1)
+  const lastBtn = Math.min(spendMax + 2, 12);      // vis 2 låne-knapper i rødt etter det
   let btns = "";
-  for (let r = 1; r <= maxRolls; r++) btns += `<button class="rb ${r === pkRolls ? "sel" : ""}" data-r="${r}">${r}</button>`;
-  const d = bankDelta(pkRolls);
-  const eff = d > 0 ? `<span class="save-pos">+${d} kast spart</span>`
-    : d < 0 ? `<span class="save-neg">${d} kast (kjøpte ${(-d / 2)} ekstra)</span>`
-    : "nøytralt (3 kast)";
-  box.innerHTML = `<div class="rlabel">Hvor mange kast brukte du? 3 er gratis · ekstra kast koster 2× fra banken.</div>
-    <div class="rbtns">${btns}</div>
-    <div class="reffect">${eff} · bank etterpå: <b>${bankOther + d}</b> kast</div>`;
-  box.querySelectorAll(".rb").forEach(b => b.onclick = () => { pkRolls = +b.dataset.r; renderRolls(); });
+  for (let r = 0; r <= lastBtn; r++) {
+    let cls = "rb";
+    if (r === 0) cls += " strike";
+    else if (r < 3) cls += " save";
+    else if (r > spendMax) cls += " loan";
+    if (r === pkRolls) cls += " sel";
+    btns += `<button class="${cls}" data-r="${r}">${r === 0 ? "0 ✕" : r}</button>`;
+  }
+  box.innerHTML = `<div class="rlabel">Hvor mange kast brukte du? <b>0 = stryk</b> · 3 gratis · ekstra tas fra banken, over det = lån (2×)</div>
+    <div class="rbtns">${btns}<input class="rinput" type="number" min="0" inputmode="numeric" placeholder="…"></div>
+    <div class="reffect" id="pk-eff"></div>`;
+  box.querySelectorAll(".rb").forEach(b => b.onclick = () => {
+    const r = +b.dataset.r;
+    if (r === 0) { pkRolls = 0; pick("X"); return; }  // 0 = stryk og spar 3 kast
+    pkRolls = r; renderRolls();
+  });
+  const inp = box.querySelector(".rinput");
+  inp.oninput = () => {
+    const v = parseInt(inp.value, 10);
+    if (!isNaN(v) && v >= 0) { pkRolls = v; markSel(); updateEffect(); }
+  };
+  updateEffect();
+}
+function markSel() {
+  $("pk-rolls").querySelectorAll(".rb").forEach(b => b.classList.toggle("sel", +b.dataset.r === pkRolls));
+}
+function updateEffect() {
+  const bankBefore = bankBeforeCell();
+  const d = computeDelta(pkRolls, bankBefore);
+  const after = bankBefore + d;
+  const extra = Math.max(0, pkRolls - 3);
+  const loan = Math.max(0, extra - Math.max(0, bankBefore));
+  let msg;
+  if (pkRolls <= 2) msg = `<span class="save-pos">+${3 - pkRolls} kast spart</span>`;
+  else if (pkRolls === 3) msg = "nøytralt (3 gratis kast)";
+  else if (loan === 0) msg = `<span class="save-neg">−${extra} fra banken</span>`;
+  else msg = `<span class="save-neg">${loan} på lån · koster ${loan * 2} kast</span>`;
+  $("pk-eff").innerHTML = `${msg} · bank etterpå: <b class="${after < 0 ? "save-neg" : "save-pos"}">${after} kast</b>`;
 }
 function closePicker() { $("picker").classList.remove("show"); $("overlay").classList.remove("show"); }
 $("overlay").onclick = closePicker;
 
 function pick(v) {
   const p = state.players[pkP];
-  if (v === "UNDO") { delete p.scores[pkC]; if (p.rolls) delete p.rolls[pkC]; }
-  else {
+  if (v === "UNDO") {
+    delete p.scores[pkC];
+    if (state.saving && p.deltas && p.deltas[pkC] !== undefined) {
+      p.bank -= p.deltas[pkC];
+      delete p.deltas[pkC]; delete p.rolls[pkC];
+    }
+  } else {
     if (v === "X") p.scores[pkC] = "X"; else p.scores[pkC] = +v;
-    if (state.saving) { p.rolls = p.rolls || {}; p.rolls[pkC] = pkRolls; }
+    if (state.saving) {
+      const bankBefore = bankBeforeCell();          // reverserer gammelt uttak ved re-pick
+      const d = computeDelta(pkRolls, bankBefore);
+      p.bank = bankBefore + d;
+      p.rolls[pkC] = pkRolls;
+      p.deltas[pkC] = d;
+    }
   }
   save(); closePicker(); renderBoard();
 }
@@ -452,7 +504,18 @@ if (saved) {
   state = saved;
   if (state.saving === undefined) state.saving = false;
   if (state.showTotal === undefined) state.showTotal = true;
-  state.players.forEach(p => { if (!p.rolls) p.rolls = {}; });
+  state.players.forEach(p => {
+    if (!p.rolls) p.rolls = {};
+    if (!p.deltas || p.bank === undefined) { // rekonstruér bank fra kast-historikk (i kategorirekkefølge)
+      p.deltas = {}; p.bank = 0;
+      ORDER.forEach(id => {
+        if (p.rolls[id] !== undefined) {
+          const d = computeDelta(p.rolls[id], p.bank);
+          p.deltas[id] = d; p.bank += d;
+        }
+      });
+    }
+  });
   showBoard();
 }
 </script>
