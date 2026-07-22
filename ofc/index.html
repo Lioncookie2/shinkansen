@@ -27,15 +27,13 @@
   a.back { position: absolute; top: calc(18px + env(safe-area-inset-top)); left: 14px; text-decoration: none;
     color: var(--muted); font-size: 13px; font-weight: 600; }
 
-  .wrap { width: 100%; max-width: 440px; }
-  /* faner */
+  .wrap { width: 100%; max-width: 460px; }
   #tabs { display: flex; gap: 8px; margin-bottom: 14px; justify-content: center; }
   #tabs button { padding: 9px 18px; border-radius: 999px; border: 1.5px solid var(--border);
     background: none; font-size: 13.5px; font-weight: 800; color: var(--muted); }
   #tabs button.sel { border-color: var(--accent); color: var(--accent); background: rgba(199,62,58,.06); }
-
-  .tabpane { display: none; }
-  .tabpane.show { display: block; }
+  .tabpane { display: none; } .tabpane.show { display: block; }
+  .screen { display: none; } .screen.show { display: block; }
 
   .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px;
     padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
@@ -46,21 +44,17 @@
   .panel .tip { margin-top: 9px; font-size: 12.5px; font-weight: 600; color: var(--accent);
     background: rgba(199,62,58,.07); border-radius: 10px; padding: 7px 11px; line-height: 1.5; }
 
-  /* regler: hånd-diagram */
   .handrow { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
   .handrow .cards { display: flex; gap: 3px; }
   .mini { width: 26px; height: 36px; border-radius: 5px; background: #fff; border: 1px solid var(--border);
     display: grid; place-items: center; font-size: 13px; font-weight: 800; color: var(--indigo);
     box-shadow: 0 1px 3px rgba(90,70,40,.15); }
-  .handrow .lbl { font-size: 12.5px; color: var(--muted); }
-  .handrow .lbl b { color: var(--text); }
-
+  .handrow .lbl { font-size: 12.5px; color: var(--muted); } .handrow .lbl b { color: var(--text); }
   table.roy { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   table.roy th { text-align: left; padding: 5px 6px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
   table.roy td { padding: 5px 6px; border-top: 1px solid var(--border); color: #55493a; }
   table.roy td:last-child, table.roy th:last-child { text-align: right; font-weight: 700; color: var(--indigo); }
 
-  /* tracker */
   .name-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .name-row input { flex: 1; border: 1px solid var(--border); background: rgba(60,45,30,.03);
     border-radius: 12px; padding: 11px 14px; font-size: 15px; font-family: inherit; outline: none; color: var(--text); }
@@ -71,48 +65,89 @@
     color: var(--indigo); font-size: 13px; font-weight: 700; padding: 7px 8px 7px 13px; border-radius: 999px; }
   .ptag button { background: none; border: none; color: var(--indigo); opacity: .6; font-size: 15px; padding: 0 4px; }
   .stake-row { display: flex; align-items: center; justify-content: space-between; }
-  .stake-row .lbl { font-size: 14px; font-weight: 600; }
-  .stake-row .lbl small { display: block; font-weight: 500; color: var(--muted); font-size: 11.5px; }
+  .stake-row .lbl { font-size: 14px; font-weight: 600; } .stake-row .lbl small { display: block; font-weight: 500; color: var(--muted); font-size: 11.5px; }
   .stake-row input { width: 80px; border: 1px solid var(--border); background: rgba(60,45,30,.03);
     border-radius: 10px; padding: 8px; font-size: 15px; text-align: center; font-family: inherit; outline: none; }
   .bigbtn { width: 100%; padding: 15px; border: none; border-radius: 16px; background: var(--grad);
     color: #fff; font-size: 16px; font-weight: 800; box-shadow: var(--shadow); }
   .bigbtn:disabled { opacity: .4; }
+  .bigbtn.ghost { background: none; border: 1.5px solid var(--border); color: var(--muted); box-shadow: none; margin-top: 10px; }
 
-  /* poengregistrering */
-  .scorein { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-  .scorein .nm { font-size: 14.5px; font-weight: 700; flex: 1; }
-  .scorein .ctrl { display: flex; align-items: center; gap: 6px; }
-  .scorein button { width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--border);
-    background: none; font-size: 17px; font-weight: 800; color: var(--indigo); }
-  .scorein input { width: 62px; border: 1px solid var(--border); background: rgba(60,45,30,.03);
-    border-radius: 10px; padding: 7px; font-size: 15px; text-align: center; font-family: inherit; outline: none; }
-  #sum-warn { font-size: 12px; font-weight: 600; text-align: center; min-height: 18px; margin: 2px 0 8px; }
+  .topbtns { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
+  .topbtns button { background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
 
-  /* stillingen */
   .standrow { display: flex; align-items: center; justify-content: space-between; padding: 9px 4px; border-bottom: 1px solid var(--border); }
   .standrow:last-child { border-bottom: none; }
-  .standrow .nm { font-size: 14.5px; font-weight: 700; }
-  .standrow .nm small { color: var(--muted); font-weight: 500; margin-left: 6px; font-size: 11.5px; }
+  .standrow .nm { font-size: 14.5px; font-weight: 700; } .standrow .nm small { color: var(--muted); font-weight: 500; margin-left: 6px; font-size: 11.5px; }
   .standrow .pts { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 19px; font-weight: 900; font-variant-numeric: tabular-nums; }
   .standrow .pts small { font-size: 11px; color: var(--muted); font-weight: 600; display: block; text-align: right; }
   .pos { color: var(--matcha); } .neg { color: var(--accent); }
 
-  #chart { width: 100%; }
-  #chart text { font-family: "Inter", sans-serif; }
-  .topbtns { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
-  .topbtns button { background: none; border: 1px solid var(--border); color: var(--muted);
-    font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+  #chart { width: 100%; } #chart text { font-family: "Inter", sans-serif; }
   .statgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .stat { background: rgba(51,80,107,.06); border-radius: 12px; padding: 10px; text-align: center; }
   .stat .v { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 17px; font-weight: 900; color: var(--indigo); }
   .stat .k { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+  /* rundehistorikk */
+  .hround { border-bottom: 1px solid var(--border); padding: 10px 2px; }
+  .hround:last-child { border-bottom: none; }
+  .hround .htop { display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; }
+  .hround .hres { font-weight: 800; }
+  .hround .hdetail { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .hround .hx { background: none; border: none; color: var(--muted); opacity: .55; font-size: 15px; padding: 0 4px; }
+
+  /* rundevalg */
+  .selp { display: flex; gap: 8px; margin-bottom: 12px; }
+  .selp .col { flex: 1; }
+  .selp label { display: block; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+  .selp select { width: 100%; border: 1.5px solid var(--border); background: var(--card); border-radius: 12px;
+    padding: 11px; font-size: 15px; font-weight: 700; color: var(--indigo); font-family: inherit; outline: none; }
+
+  /* kort-innlegging */
+  .hand { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .hand h4 { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+  .hand h4 .who { color: var(--accent); }
+  .rowline { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .rowline .rl { width: 46px; font-size: 10.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+  .slots { display: flex; gap: 5px; flex: 1; }
+  .slot { flex: 1; max-width: 40px; aspect-ratio: 5/7; border-radius: 7px; border: 1.5px dashed var(--border);
+    background: rgba(60,45,30,.02); display: grid; place-items: center; font-size: 14px; font-weight: 800; color: var(--muted); }
+  .slot.filled { border-style: solid; background: #fff; box-shadow: 0 1px 4px rgba(90,70,40,.12); }
+  .slot.active { border-color: var(--accent); border-style: solid; background: rgba(199,62,58,.06); }
+  .slot .red { color: #c0392b; } .slot .blk { color: var(--indigo); }
+  .handeval { font-size: 11.5px; color: var(--muted); margin-top: 4px; min-height: 16px; }
+  .handeval.foul { color: var(--accent); font-weight: 800; }
+
+  /* palett */
+  #palette { position: sticky; bottom: 0; background: var(--bg); padding: 8px 0 0; }
+  .palrow { display: flex; gap: 3px; margin-bottom: 3px; justify-content: center; }
+  .pcard { flex: 1; max-width: 30px; aspect-ratio: 5/7; border-radius: 6px; border: 1px solid var(--border);
+    background: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 800; box-shadow: 0 1px 3px rgba(90,70,40,.12); }
+  .pcard.red { color: #c0392b; } .pcard.blk { color: var(--indigo); }
+  .pcard.used { opacity: .22; pointer-events: none; }
+  .palhint { text-align: center; font-size: 11.5px; color: var(--muted); margin: 6px 0 10px; font-weight: 600; }
+  .palhint b { color: var(--accent); }
+
+  /* resultat-forhåndsvisning */
+  #preview { display: none; background: rgba(51,80,107,.06); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  #preview.show { display: block; }
+  #preview .pv-main { text-align: center; font-family: "Zen Kaku Gothic New", sans-serif; font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  #preview .pv-detail { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  .manrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .manrow .mn { font-size: 14.5px; font-weight: 700; flex: 1; }
+  .manrow .mc { display: flex; align-items: center; gap: 6px; }
+  .manrow button { width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--border); background: none; font-size: 17px; font-weight: 800; color: var(--indigo); }
+  .manrow input { width: 62px; border: 1px solid var(--border); background: rgba(60,45,30,.03); border-radius: 10px; padding: 7px; font-size: 15px; text-align: center; font-family: inherit; outline: none; }
+  #man-warn { font-size: 12px; font-weight: 600; text-align: center; min-height: 18px; margin: 2px 0 8px; }
 </style>
 </head>
 <body>
 <a class="back" href="../">← Games</a>
 <h1>OFC Poker <span>♠️</span></h1>
-<div class="sub">Open Face Chinese — regler og poeng/penge-tracker</div>
+<div class="sub">Open Face Chinese — regler + automatisk poengregning fra kortene</div>
 
 <div class="wrap">
   <div id="tabs">
@@ -124,107 +159,85 @@
   <div class="tabpane show" id="pane-rules">
     <div class="panel">
       <h3>Oppsett</h3>
-      <p><b>2–3 spillere</b> med én kortstokk (52 kort). Hver spiller skal ende opp med <b>13 kort</b> fordelt på tre rekker som legges åpent på bordet:</p>
+      <p><b>2–3 spillere</b> med én kortstokk. Hver spiller ender med <b>13 kort</b> i tre rekker, lagt åpent:</p>
       <div style="height:10px"></div>
       <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Topp</b> — 3 kort (svakest)</div></div>
       <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Midten</b> — 5 kort</div></div>
       <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Bunn</b> — 5 kort (sterkest)</div></div>
-      <div class="tip">⚠️ Gylden regel: Bunn ≥ Midten ≥ Topp. Bryter du rekkefølgen «fouler» du — hånden er død og du taper 6 poeng til hver motstander (+ deres royalties).</div>
+      <div class="tip">⚠️ Bunn ≥ Midten ≥ Topp. Bryter du rekkefølgen «fouler» du — hånden er død og du taper 6 til motstanderen (+ deres royalties).</div>
     </div>
-
     <div class="panel">
-      <h3>Spillets gang</h3>
-      <p><b>1.</b> Alle får <b>5 kort</b> først og plasserer dem valgfritt i de tre rekkene — plasserte kort kan ALDRI flyttes.<br><br>
-      <b>2. Klassisk:</b> deretter trekker man <b>ett og ett kort</b> (8 runder) til alle har 13.<br>
-      <b>Pineapple</b> (den vanligste varianten): man trekker <b>3 kort, beholder 2 og kaster 1</b> skjult — 4 runder à 3 kort.<br><br>
-      <b>3.</b> Når alle har lagt 13 kort, sammenlignes rekkene mot hver motstander: topp mot topp, midt mot midt, bunn mot bunn.</p>
+      <h3>Poeng (1–6)</h3>
+      <p>Mot hver motstander: <b>+1 per rekke du vinner</b>. Vinner du alle tre («scoop») får du <b>+3 bonus</b> = 6 poeng. Royalties (bonus for sterke hender) legges oppå, og betales selv om du taper rekka.</p>
     </div>
-
     <div class="panel">
-      <h3>Poeng (1–6-scoring)</h3>
-      <p>Mot hver motstander: <b>+1 poeng per rekke du vinner</b>. Vinner du alle tre («scoop») får du <b>+3 bonus</b> — altså 6 poeng totalt. I tillegg kommer royalties (bonuser for sterke hender) som legges oppå, og de utbetales selv om du taper rekka.</p>
-    </div>
-
-    <div class="panel">
-      <h3>Royalties — bunn</h3>
+      <h3>Royalties</h3>
       <table class="roy">
-        <tr><th>Hånd</th><th>Poeng</th></tr>
-        <tr><td>Straight</td><td>+2</td></tr>
-        <tr><td>Flush</td><td>+4</td></tr>
-        <tr><td>Hus (full house)</td><td>+6</td></tr>
-        <tr><td>Fire like</td><td>+10</td></tr>
-        <tr><td>Straight flush</td><td>+15</td></tr>
-        <tr><td>Royal flush</td><td>+25</td></tr>
+        <tr><th>Hånd</th><th>Bunn</th><th>Midten</th></tr>
+        <tr><td>Tre like</td><td>—</td><td>+2</td></tr>
+        <tr><td>Straight</td><td>+2</td><td>+4</td></tr>
+        <tr><td>Flush</td><td>+4</td><td>+8</td></tr>
+        <tr><td>Hus</td><td>+6</td><td>+12</td></tr>
+        <tr><td>Fire like</td><td>+10</td><td>+20</td></tr>
+        <tr><td>Straight flush</td><td>+15</td><td>+30</td></tr>
+        <tr><td>Royal flush</td><td>+25</td><td>+50</td></tr>
       </table>
-      <div class="tip">Midten gir <b>dobbel royalty</b> av bunn (hus i midten = +12), og der gir også tre like +2.</div>
+      <div class="tip">Topp (3 kort): par i 6-ere = +1 … ess = +9. Tre like 222 = +10 … AAA = +22. <b>QQ+ på topp = Fantasyland</b> 🌈</div>
     </div>
-
     <div class="panel">
-      <h3>Royalties — topp (3 kort)</h3>
-      <table class="roy">
-        <tr><th>Hånd</th><th>Poeng</th></tr>
-        <tr><td>Par i 6-ere</td><td>+1</td></tr>
-        <tr><td>… ett poeng mer per valør (7=+2 … ess=+9)</td><td>+2–9</td></tr>
-        <tr><td>Tre like (222 = +10, opp til AAA)</td><td>+10–22</td></tr>
-      </table>
-    </div>
-
-    <div class="panel">
-      <h3>Fantasyland 🌈</h3>
-      <p>Klarer du <b>par i damer eller bedre på topp</b> (uten å foule), spiller du neste hånd i «Fantasyland»: du får alle <b>14 kort på én gang</b> (legg 13, kast 1) mens de andre spiller vanlig. Ny QQ+/tre like på topp, fire like+ i bunn = bli værende i Fantasyland.</p>
-      <div class="tip">💡 Spiller dere om penger: bli enige om kroneverdi per poeng FØR start — f.eks. 1 kr/poeng. Trackeren regner om for dere.</div>
+      <h3>Slik brukes trackeren</h3>
+      <p>Legg inn spillerne, velg de to som spilte runden (og hvem du regner fra), <b>tapp inn de 13 kortene</b> til hver — appen regner ut royalties, rekker og scoop automatisk. Trykk <b>«✓ Lagre runde»</b>, og poengene tracker seg selv, runde for runde. Spiller om penger? Sett kroneverdi per poeng.</p>
     </div>
   </div>
 
   <!-- ============ TRACKER ============ -->
   <div class="tabpane" id="pane-track">
     <!-- oppsett -->
-    <div id="t-setup">
+    <div class="screen show" id="t-setup">
       <div class="panel">
-        <h2>Spillere (2–4)</h2>
-        <div class="name-row">
-          <input id="pname" placeholder="Navn …" maxlength="14" autocomplete="off">
-          <button id="padd">+</button>
-        </div>
+        <h2>Spillere (2+)</h2>
+        <div class="name-row"><input id="pname" placeholder="Navn …" maxlength="14" autocomplete="off"><button id="padd">+</button></div>
         <div class="plist" id="plist"></div>
       </div>
       <div class="panel">
-        <div class="stake-row">
-          <div class="lbl">Kroner per poeng<small>0 = spill bare om poeng</small></div>
-          <input id="stake" type="number" value="0" min="0" step="0.5">
-        </div>
+        <div class="stake-row"><div class="lbl">Kroner per poeng<small>0 = spill bare om poeng</small></div>
+          <input id="stake" type="number" value="0" min="0" step="0.5"></div>
       </div>
       <button class="bigbtn" id="start" disabled>Start tracking</button>
     </div>
 
-    <!-- aktiv -->
-    <div id="t-game" style="display:none">
-      <div class="topbtns">
-        <button id="undo">↩ Angre siste</button>
-        <button id="newgame">Nytt spill</button>
-      </div>
+    <!-- hovedskjerm -->
+    <div class="screen" id="t-main">
+      <div class="topbtns"><button id="undo">↩ Angre siste</button><button id="newgame">Nytt spill</button></div>
+      <button class="bigbtn" id="new-round" style="margin-bottom:14px">＋ Ny runde (kort)</button>
+      <div class="panel"><h2>Stillingen</h2><div id="standings"></div></div>
+      <div class="panel"><h2>Utvikling</h2><svg id="chart"></svg><div id="legend" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div></div>
+      <div class="panel"><h2>Statistikk</h2><div class="statgrid" id="stats"></div></div>
+      <div class="panel"><h2>Runder</h2><div id="history"></div></div>
+    </div>
 
-      <div class="panel">
-        <h2 id="round-title">Runde 1 — poeng per spiller</h2>
-        <div id="scoreins"></div>
-        <div id="sum-warn"></div>
-        <button class="bigbtn" id="saveround">Lagre runden</button>
+    <!-- kort-runde -->
+    <div class="screen" id="t-round">
+      <div class="topbtns"><button id="round-cancel">✕ Avbryt</button></div>
+      <div class="selp">
+        <div class="col"><label>Regner fra (start)</label><select id="sel-a"></select></div>
+        <div class="col"><label>Mot</label><select id="sel-b"></select></div>
       </div>
+      <div id="hands"></div>
+      <div id="preview"></div>
+      <button class="bigbtn" id="round-save" disabled>Regn ut & se resultat</button>
+      <button class="bigbtn ghost" id="to-manual">Skriv resultat manuelt i stedet</button>
+      <div id="palette"></div>
+    </div>
 
+    <!-- manuell runde -->
+    <div class="screen" id="t-manual">
+      <div class="topbtns"><button id="man-cancel">✕ Avbryt</button></div>
       <div class="panel">
-        <h2>Stillingen</h2>
-        <div id="standings"></div>
-      </div>
-
-      <div class="panel">
-        <h2>Utvikling</h2>
-        <svg id="chart"></svg>
-        <div id="legend" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div>
-      </div>
-
-      <div class="panel">
-        <h2>Statistikk</h2>
-        <div class="statgrid" id="stats"></div>
+        <h2>Manuell runde — netto poeng</h2>
+        <div id="man-rows"></div>
+        <div id="man-warn"></div>
+        <button class="bigbtn" id="man-save">✓ Lagre runde</button>
       </div>
     </div>
   </div>
@@ -233,10 +246,88 @@
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
-const LS = "ofc-v1";
-const COLORS = ["#c73e3a", "#33506b", "#5a8f5d", "#b8860b"];
+const COLORS = ["#c73e3a", "#33506b", "#5a8f5d", "#b8860b", "#7d5ba6", "#0e7490"];
+const LS = "ofc-v2";
+const SUITS = ["♣", "♦", "♥", "♠"];        // 0..3
+const RED = s => s === 1 || s === 2;
+const RNAME = { 11: "J", 12: "Q", 13: "K", 14: "A" };
+function rlabel(r) { return RNAME[r] || String(r); }
+function cstr(c) { return rlabel(c.r) + SUITS[c.s]; }
+function ckey(c) { return c.r * 4 + c.s; }
 
-/* faner */
+/* ---------- pokerlogikk ---------- */
+function counts(rs) { const m = {}; rs.forEach(r => m[r] = (m[r] || 0) + 1); return m; }
+function byCount(rs) {
+  return Object.entries(counts(rs)).map(([r, c]) => [+r, c]).sort((a, b) => b[1] - a[1] || b[0] - a[0]);
+}
+function straightHigh(rs) {
+  const u = [...new Set(rs)].sort((a, b) => b - a);
+  if (u.length !== 5) return 0;
+  if (u[0] - u[4] === 4) return u[0];
+  if (u[0] === 14 && u[1] === 5 && u[4] === 2) return 5; // hjul A-2-3-4-5
+  return 0;
+}
+function eval5(cards) {
+  const rs = cards.map(c => c.r).sort((a, b) => b - a);
+  const flush = cards.every(c => c.s === cards[0].s);
+  const sh = straightHigh(rs);
+  const bc = byCount(rs);
+  const c1 = bc[0][1], c2 = bc[1] ? bc[1][1] : 0;
+  if (sh && flush) return { cat: 8, tie: [sh] };
+  if (c1 === 4) return { cat: 7, tie: [bc[0][0], bc[1][0]] };
+  if (c1 === 3 && c2 === 2) return { cat: 6, tie: [bc[0][0], bc[1][0]] };
+  if (flush) return { cat: 5, tie: rs };
+  if (sh) return { cat: 4, tie: [sh] };
+  if (c1 === 3) return { cat: 3, tie: bc.map(x => x[0]) };
+  if (c1 === 2 && c2 === 2) {
+    const pairs = bc.filter(x => x[1] === 2).map(x => x[0]).sort((a, b) => b - a);
+    const kick = bc.filter(x => x[1] === 1).map(x => x[0]);
+    return { cat: 2, tie: [...pairs, ...kick] };
+  }
+  if (c1 === 2) return { cat: 1, tie: bc.map(x => x[0]) };
+  return { cat: 0, tie: rs };
+}
+function eval3(cards) {
+  const rs = cards.map(c => c.r).sort((a, b) => b - a);
+  const bc = byCount(rs);
+  if (bc[0][1] === 3) return { cat: 3, tie: [bc[0][0]] };
+  if (bc[0][1] === 2) return { cat: 1, tie: [bc[0][0], bc.filter(x => x[1] === 1)[0][0]] };
+  return { cat: 0, tie: rs };
+}
+function cmp(a, b) {
+  if (a.cat !== b.cat) return a.cat - b.cat;
+  const n = Math.max(a.tie.length, b.tie.length);
+  for (let i = 0; i < n; i++) { const x = a.tie[i] || 0, y = b.tie[i] || 0; if (x !== y) return x - y; }
+  return 0;
+}
+const CAT5 = ["høykort", "par", "to par", "tre like", "straight", "flush", "hus", "fire like", "straight flush"];
+function name5(ev) { return ev.cat === 8 && ev.tie[0] === 14 ? "royal flush" : CAT5[ev.cat]; }
+function name3(ev) { return ev.cat === 3 ? "tre like" : ev.cat === 1 ? "par " + rlabel(ev.tie[0]) : "høykort"; }
+function royBottom(ev) { if (ev.cat === 8) return ev.tie[0] === 14 ? 25 : 15; return ({ 7: 10, 6: 6, 5: 4, 4: 2 })[ev.cat] || 0; }
+function royMiddle(ev) { if (ev.cat === 8) return ev.tie[0] === 14 ? 50 : 30; return ({ 7: 20, 6: 12, 5: 8, 4: 4, 3: 2 })[ev.cat] || 0; }
+function royTop(ev) { if (ev.cat === 3) return 10 + (ev.tie[0] - 2); if (ev.cat === 1) { const r = ev.tie[0]; return r >= 6 ? r - 5 : 0; } return 0; }
+
+function evalHand(h) { // h = {top:[3], mid:[5], bot:[5]}
+  const top = eval3(h.top), mid = eval5(h.mid), bot = eval5(h.bot);
+  const foul = cmp(bot, mid) < 0 || cmp(mid, top) < 0;
+  const roy = foul ? 0 : royBottom(bot) + royMiddle(mid) + royTop(top);
+  return { top, mid, bot, foul, roy };
+}
+/* netto for A mot B (heads-up) */
+function scoreAB(hA, hB) {
+  const A = evalHand(hA), B = evalHand(hB);
+  if (A.foul && B.foul) return { net: 0, A, B };
+  if (A.foul) return { net: -(6 + B.roy), A, B };
+  if (B.foul) return { net: 6 + A.roy, A, B };
+  let base = 0;
+  base += cmp(A.bot, B.bot) > 0 ? 1 : cmp(A.bot, B.bot) < 0 ? -1 : 0;
+  base += cmp(A.mid, B.mid) > 0 ? 1 : cmp(A.mid, B.mid) < 0 ? -1 : 0;
+  base += cmp(A.top, B.top) > 0 ? 1 : cmp(A.top, B.top) < 0 ? -1 : 0;
+  if (base === 3) base = 6; else if (base === -3) base = -6;
+  return { net: base + (A.roy - B.roy), A, B };
+}
+
+/* ---------- faner ---------- */
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#tabs button").forEach(x => x.classList.remove("sel"));
   b.classList.add("sel");
@@ -245,162 +336,245 @@ document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
   if (b.dataset.t === "track" && G) drawChart();
 });
 
-/* oppsett */
+/* ---------- oppsett ---------- */
 const names = [];
 function renderNames() {
   $("plist").innerHTML = names.map((n, i) => `<span class="ptag">${n}<button data-i="${i}">✕</button></span>`).join("");
   $("plist").querySelectorAll("button").forEach(b => b.onclick = () => { names.splice(+b.dataset.i, 1); renderNames(); });
   $("start").disabled = names.length < 2;
 }
-function addName() {
-  const n = $("pname").value.trim();
-  if (!n || names.length >= 4) return;
-  names.push(n); $("pname").value = ""; renderNames(); $("pname").focus();
-}
+function addName() { const n = $("pname").value.trim(); if (!n || names.length >= 6) return; names.push(n); $("pname").value = ""; renderNames(); $("pname").focus(); }
 $("padd").onclick = addName;
 $("pname").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
 
-/* G = { players, stake, rounds: [[p1,p2,...], ...] } */
-let G = null;
+/* ---------- tilstand ---------- */
+let G = null; // { players:[{id,name}], stake, rounds:[{id, deltas:{pid:pts}, detail?}] }
 function save() { localStorage.setItem(LS, JSON.stringify(G)); }
-function load() {
-  try { const g = JSON.parse(localStorage.getItem(LS)); if (g && g.players?.length) return g; } catch (e) {}
-  return null;
-}
+function load() { try { const g = JSON.parse(localStorage.getItem(LS)); if (g && g.players) return g; } catch (e) {} return null; }
+function screen(id) { document.querySelectorAll("#pane-track .screen").forEach(s => s.classList.remove("show")); $(id).classList.add("show"); }
+
 $("start").onclick = () => {
-  G = { players: [...names], stake: parseFloat($("stake").value) || 0, rounds: [] };
-  save(); showGame();
+  G = { players: names.map((n, i) => ({ id: "p" + Date.now() + i, name: n })), stake: parseFloat($("stake").value) || 0, rounds: [] };
+  save(); showMain();
 };
+function pname(id) { const p = G.players.find(x => x.id === id); return p ? p.name : "?"; }
+function totals() { const t = {}; G.players.forEach(p => t[p.id] = 0); G.rounds.forEach(r => { for (const id in r.deltas) t[id] = (t[id] || 0) + r.deltas[id]; }); return t; }
 
-function totals() {
-  return G.players.map((_, i) => G.rounds.reduce((s, r) => s + (r[i] || 0), 0));
-}
-
-function showGame() {
-  $("t-setup").style.display = "none";
-  $("t-game").style.display = "block";
-  render();
-}
-
-function render() {
-  $("round-title").textContent = `Runde ${G.rounds.length + 1} — poeng per spiller`;
-  // inputfelt
-  $("scoreins").innerHTML = G.players.map((n, i) => `
-    <div class="scorein">
-      <span class="nm" style="color:${COLORS[i]}">${n}</span>
-      <div class="ctrl">
-        <button data-i="${i}" data-d="-1">−</button>
-        <input id="in-${i}" type="number" value="0" step="1">
-        <button data-i="${i}" data-d="1">+</button>
-      </div>
-    </div>`).join("");
-  $("scoreins").querySelectorAll("button").forEach(b => b.onclick = () => {
-    const inp = $("in-" + b.dataset.i);
-    inp.value = (parseInt(inp.value, 10) || 0) + (+b.dataset.d);
-    checkSum();
-  });
-  $("scoreins").querySelectorAll("input").forEach(inp => inp.oninput = checkSum);
-  checkSum();
-  renderStandings();
+function showMain() { screen("t-main"); renderMain(); }
+function renderMain() {
+  const t = totals();
+  const order = [...G.players].sort((a, b) => t[b.id] - t[a.id]);
+  const lead = order.length ? t[order[0].id] : 0;
+  $("standings").innerHTML = order.map((p, pos) => {
+    const v = t[p.id], diff = lead - v;
+    const money = G.stake ? ` · ${(v * G.stake).toFixed(0)} kr` : "";
+    return `<div class="standrow">
+      <span class="nm">${pos === 0 && G.rounds.length ? "👑 " : ""}${p.name}<small>${pos > 0 ? diff + " bak" : G.rounds.length ? "leder" : ""}</small></span>
+      <span class="pts ${v > 0 ? "pos" : v < 0 ? "neg" : ""}">${v > 0 ? "+" : ""}${v}<small>poeng${money}</small></span></div>`;
+  }).join("");
   drawChart();
   renderStats();
+  renderHistory();
 }
-
-function checkSum() {
-  const vals = G.players.map((_, i) => parseInt($("in-" + i)?.value, 10) || 0);
-  const sum = vals.reduce((a, b) => a + b, 0);
-  const w = $("sum-warn");
-  if (sum === 0) { w.textContent = "✓ summen er 0 — det stemmer i OFC"; w.style.color = "var(--matcha)"; }
-  else { w.textContent = `Summen er ${sum > 0 ? "+" : ""}${sum} — i OFC skal poengene summere til 0`; w.style.color = "var(--gold)"; }
-}
-
-$("saveround").onclick = () => {
-  const vals = G.players.map((_, i) => parseInt($("in-" + i).value, 10) || 0);
-  if (vals.every(v => v === 0)) { alert("Fyll inn poengene først."); return; }
-  G.rounds.push(vals);
-  save(); render();
-};
-$("undo").onclick = () => { if (G.rounds.length) { G.rounds.pop(); save(); render(); } };
-$("newgame").onclick = () => {
-  if (!confirm("Starte nytt spill? Alt slettes.")) return;
-  localStorage.removeItem(LS); G = null;
-  $("t-game").style.display = "none";
-  $("t-setup").style.display = "block";
-};
-
-function renderStandings() {
-  const t = totals();
-  const order = G.players.map((_, i) => i).sort((a, b) => t[b] - t[a]);
-  const lead = t[order[0]];
-  $("standings").innerHTML = order.map((i, pos) => {
-    const diff = t[i] - lead;
-    const money = G.stake ? ` · ${(t[i] * G.stake).toFixed(0)} kr` : "";
-    return `<div class="standrow">
-      <span class="nm" style="color:${COLORS[i]}">${pos === 0 && G.rounds.length ? "👑 " : ""}${G.players[i]}
-        <small>${pos > 0 ? Math.abs(diff) + " bak" : G.rounds.length ? "leder" : ""}</small></span>
-      <span class="pts ${t[i] > 0 ? "pos" : t[i] < 0 ? "neg" : ""}">${t[i] > 0 ? "+" : ""}${t[i]}<small>poeng${money}</small></span>
-    </div>`;
+function renderHistory() {
+  if (!G.rounds.length) { $("history").innerHTML = `<div style="color:var(--muted);font-size:13px;padding:6px 2px">Ingen runder ennå — trykk «Ny runde».</div>`; return; }
+  $("history").innerHTML = [...G.rounds].reverse().map((r, ri) => {
+    const idx = G.rounds.length - ri;
+    const parts = Object.entries(r.deltas).map(([id, v]) => `${pname(id)} <b class="${v > 0 ? "pos" : v < 0 ? "neg" : ""}">${v > 0 ? "+" : ""}${v}</b>`).join(" · ");
+    return `<div class="hround"><div class="htop"><span>Runde ${idx}</span><span class="hres">${parts}</span><button class="hx" data-id="${r.id}">✕</button></div>
+      ${r.detail ? `<div class="hdetail">${r.detail}</div>` : ""}</div>`;
   }).join("");
+  $("history").querySelectorAll(".hx").forEach(b => b.onclick = () => { G.rounds = G.rounds.filter(r => r.id !== b.dataset.id); save(); renderMain(); });
 }
-
-function drawChart() {
-  const svg = d3.select("#chart");
-  svg.selectAll("*").remove();
-  const W = Math.min(404, document.querySelector(".wrap").clientWidth - 36), H = 200;
-  svg.attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%").attr("height", H);
-  const m = { t: 10, r: 12, b: 22, l: 30 };
-
-  // kumulative serier (starter på 0)
-  const series = G.players.map((_, i) => {
-    let acc = 0;
-    return [0, ...G.rounds.map(r => (acc += (r[i] || 0)))];
-  });
-  const nR = G.rounds.length;
-  const allVals = series.flat();
-  const x = d3.scaleLinear().domain([0, Math.max(1, nR)]).range([m.l, W - m.r]);
-  const y = d3.scaleLinear().domain([Math.min(0, d3.min(allVals)), Math.max(1, d3.max(allVals))]).nice().range([H - m.b, m.t]);
-
-  // akser
-  svg.append("g").attr("transform", `translate(0,${H - m.b})`)
-    .call(d3.axisBottom(x).ticks(Math.min(nR, 8)).tickFormat(d3.format("d")))
-    .call(g => { g.selectAll("text").attr("fill", "#8a7f6d").attr("font-size", 9); g.selectAll("line,path").attr("stroke", "#d8cdb8"); });
-  svg.append("g").attr("transform", `translate(${m.l},0)`)
-    .call(d3.axisLeft(y).ticks(5))
-    .call(g => { g.selectAll("text").attr("fill", "#8a7f6d").attr("font-size", 9); g.selectAll("line,path").attr("stroke", "#d8cdb8"); });
-  // null-linje
-  svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0))
-    .attr("stroke", "#b8ab92").attr("stroke-dasharray", "3 3");
-
-  const line = d3.line().x((d, j) => x(j)).y(d => y(d)).curve(d3.curveMonotoneX);
-  series.forEach((s, i) => {
-    svg.append("path").datum(s).attr("fill", "none").attr("stroke", COLORS[i]).attr("stroke-width", 2.5).attr("d", line);
-    // sirkel på siste punkt
-    svg.append("circle").attr("cx", x(s.length - 1)).attr("cy", y(s[s.length - 1])).attr("r", 4)
-      .attr("fill", COLORS[i]).attr("stroke", "#fcf8f0").attr("stroke-width", 1.5);
-  });
-
-  $("legend").innerHTML = G.players.map((n, i) =>
-    `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i]};margin-right:5px"></span>${n}</span>`).join("");
-}
-
 function renderStats() {
-  const t = totals();
-  const nR = G.rounds.length;
-  // største enkeltrunde
-  let bigVal = 0, bigWho = "—";
-  G.rounds.forEach(r => r.forEach((v, i) => { if (v > bigVal) { bigVal = v; bigWho = G.players[i]; } }));
-  // mest stabile (lavest varians) — eller snitt per runde for leder
-  const order = G.players.map((_, i) => i).sort((a, b) => t[b] - t[a]);
-  const leadAvg = nR ? (t[order[0]] / nR).toFixed(1) : "—";
-  const swing = nR ? Math.max(...t) - Math.min(...t) : 0;
+  const t = totals(), nR = G.rounds.length;
+  let bigV = 0, bigWho = "—";
+  G.rounds.forEach(r => Object.entries(r.deltas).forEach(([id, v]) => { if (v > bigV) { bigV = v; bigWho = pname(id); } }));
+  const vals = Object.values(t), swing = vals.length ? Math.max(...vals) - Math.min(...vals) : 0;
   $("stats").innerHTML = `
     <div class="stat"><div class="v">${nR}</div><div class="k">runder</div></div>
-    <div class="stat"><div class="v">${bigVal ? "+" + bigVal : "—"}</div><div class="k">beste runde${bigVal ? "<br>" + bigWho : ""}</div></div>
+    <div class="stat"><div class="v">${bigV ? "+" + bigV : "—"}</div><div class="k">beste runde${bigV ? "<br>" + bigWho : ""}</div></div>
     <div class="stat"><div class="v">${swing}</div><div class="k">spenn topp–bunn</div></div>`;
 }
+function drawChart() {
+  const svg = d3.select("#chart"); svg.selectAll("*").remove();
+  const W = Math.min(420, document.querySelector(".wrap").clientWidth - 36), H = 200;
+  svg.attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%").attr("height", H);
+  const m = { t: 10, r: 12, b: 22, l: 30 };
+  const series = G.players.map(p => { let acc = 0; return [0, ...G.rounds.map(r => (acc += (r.deltas[p.id] || 0)))]; });
+  const nR = G.rounds.length, allV = series.flat();
+  const x = d3.scaleLinear().domain([0, Math.max(1, nR)]).range([m.l, W - m.r]);
+  const y = d3.scaleLinear().domain([Math.min(0, d3.min(allV)), Math.max(1, d3.max(allV))]).nice().range([H - m.b, m.t]);
+  svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(Math.min(nR, 8)).tickFormat(d3.format("d")))
+    .call(g => { g.selectAll("text").attr("fill", "#8a7f6d").attr("font-size", 9); g.selectAll("line,path").attr("stroke", "#d8cdb8"); });
+  svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5))
+    .call(g => { g.selectAll("text").attr("fill", "#8a7f6d").attr("font-size", 9); g.selectAll("line,path").attr("stroke", "#d8cdb8"); });
+  svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0)).attr("stroke", "#b8ab92").attr("stroke-dasharray", "3 3");
+  const line = d3.line().x((d, j) => x(j)).y(d => y(d)).curve(d3.curveMonotoneX);
+  series.forEach((s, i) => {
+    svg.append("path").datum(s).attr("fill", "none").attr("stroke", COLORS[i % COLORS.length]).attr("stroke-width", 2.5).attr("d", line);
+    svg.append("circle").attr("cx", x(s.length - 1)).attr("cy", y(s[s.length - 1])).attr("r", 4).attr("fill", COLORS[i % COLORS.length]).attr("stroke", "#fcf8f0").attr("stroke-width", 1.5);
+  });
+  $("legend").innerHTML = G.players.map((p, i) => `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i % COLORS.length]};margin-right:5px"></span>${p.name}</span>`).join("");
+}
 
+$("undo").onclick = () => { if (G.rounds.length) { G.rounds.pop(); save(); renderMain(); } };
+$("newgame").onclick = () => { if (!confirm("Starte nytt spill? Alt slettes.")) return; localStorage.removeItem(LS); G = null; screen("t-setup"); };
+
+/* ---------- kort-runde ---------- */
+const ROWS = [["bot", "Bunn", 5], ["mid", "Midten", 5], ["top", "Topp", 3]];
+let round = null; // { aId, bId, hands:{aId:{top,mid,bot}, bId:{...}}, active:{pid,row,idx} }
+function blankHand() { return { top: [], mid: [], bot: [] }; }
+
+$("new-round").onclick = () => {
+  const [a, b] = [G.players[0], G.players[1]];
+  round = { aId: a.id, bId: b.id, hands: {}, active: null };
+  round.hands[a.id] = blankHand(); round.hands[b.id] = blankHand();
+  fillSelectors();
+  round.active = firstEmpty();
+  renderRound();
+  screen("t-round");
+};
+function fillSelectors() {
+  $("sel-a").innerHTML = G.players.map(p => `<option value="${p.id}" ${p.id === round.aId ? "selected" : ""}>${p.name}</option>`).join("");
+  $("sel-b").innerHTML = G.players.map(p => `<option value="${p.id}" ${p.id === round.bId ? "selected" : ""}>${p.name}</option>`).join("");
+}
+$("sel-a").onchange = () => { changePlayer("a", $("sel-a").value); };
+$("sel-b").onchange = () => { changePlayer("b", $("sel-b").value); };
+function changePlayer(side, id) {
+  const other = side === "a" ? round.bId : round.aId;
+  if (id === other) { // bytt så de ikke er like
+    if (side === "a") round.bId = round.aId; else round.aId = round.bId;
+  }
+  if (side === "a") round.aId = id; else round.bId = id;
+  [round.aId, round.bId].forEach(pid => { if (!round.hands[pid]) round.hands[pid] = blankHand(); });
+  round.active = firstEmpty();
+  fillSelectors(); renderRound();
+}
+function activePids() { return [round.aId, round.bId]; }
+function firstEmpty() {
+  for (const pid of activePids())
+    for (const [key, , n] of ROWS)
+      if (round.hands[pid][key].length < n) return { pid, row: key, idx: round.hands[pid][key].length };
+  return null;
+}
+function usedCards() { const s = new Set(); activePids().forEach(pid => ROWS.forEach(([k]) => round.hands[pid][k].forEach(c => s.add(ckey(c))))); return s; }
+function handComplete(pid) { return ROWS.every(([k, , n]) => round.hands[pid][k].length === n); }
+function bothComplete() { return activePids().every(handComplete); }
+
+function renderRound() {
+  $("hands").innerHTML = activePids().map(pid => {
+    const label = pid === round.aId ? "start" : "mot";
+    let rows = ROWS.map(([key, name, n]) => {
+      const arr = round.hands[pid][key];
+      const slots = Array.from({ length: n }, (_, i) => {
+        const c = arr[i];
+        const isActive = round.active && round.active.pid === pid && round.active.row === key && round.active.idx === i;
+        if (c) return `<div class="slot filled" data-pid="${pid}" data-row="${key}" data-idx="${i}"><span class="${RED(c.s) ? "red" : "blk"}">${cstr(c)}</span></div>`;
+        return `<div class="slot${isActive ? " active" : ""}" data-pid="${pid}" data-row="${key}" data-idx="${i}">·</div>`;
+      }).join("");
+      return `<div class="rowline"><div class="rl">${name}</div><div class="slots">${slots}</div></div>`;
+    }).join("");
+    let ev = "";
+    if (handComplete(pid)) {
+      const h = evalHand(round.hands[pid]);
+      ev = h.foul ? `<div class="handeval foul">⚠️ FOUL — bunn/midt/topp i feil rekkefølge</div>`
+        : `<div class="handeval">Bunn: ${name5(h.bot)} · Midt: ${name5(h.mid)} · Topp: ${name3(h.top)} · royalties +${h.roy}</div>`;
+    }
+    return `<div class="hand"><h4><span class="who">${pname(pid)}</span> <span style="color:var(--muted);font-size:12px;font-weight:600">(${label})</span></h4>${rows}${ev}</div>`;
+  }).join("");
+  $("hands").querySelectorAll(".slot").forEach(el => el.onclick = () => {
+    const pid = el.dataset.pid, row = el.dataset.row, idx = +el.dataset.idx;
+    const arr = round.hands[pid][row];
+    if (arr[idx]) { arr.splice(idx, 1); round.active = { pid, row, idx: arr.length }; } // fjern kort
+    else round.active = { pid, row, idx: Math.min(idx, arr.length) };
+    renderRound();
+  });
+  renderPalette();
+  const done = bothComplete();
+  $("round-save").disabled = !done;
+  $("round-save").textContent = done ? "Regn ut & se resultat" : `Legg inn kortene (${activePids().reduce((s, pid) => s + ROWS.reduce((a, [k]) => a + round.hands[pid][k].length, 0), 0)}/26)`;
+  $("preview").classList.remove("show");
+}
+function renderPalette() {
+  const used = usedCards();
+  const active = round.active;
+  const activeName = active ? `${pname(active.pid)} · ${ROWS.find(r => r[0] === active.row)[1]}` : "alt fylt inn";
+  let html = `<div class="palhint">Tapp kort → fylles i: <b>${activeName}</b></div>`;
+  for (let s = 3; s >= 0; s--) {
+    html += `<div class="palrow">` + [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2].map(r => {
+      const c = { r, s }, u = used.has(ckey(c));
+      return `<button class="pcard ${RED(s) ? "red" : "blk"} ${u ? "used" : ""}" data-r="${r}" data-s="${s}">${rlabel(r)}${SUITS[s]}</button>`;
+    }).join("") + `</div>`;
+  }
+  $("palette").innerHTML = html;
+  $("palette").querySelectorAll(".pcard:not(.used)").forEach(b => b.onclick = () => placeCard(+b.dataset.r, +b.dataset.s));
+}
+function placeCard(r, s) {
+  if (!round.active) round.active = firstEmpty();
+  if (!round.active) return;
+  const { pid, row } = round.active;
+  const arr = round.hands[pid][row], n = ROWS.find(x => x[0] === row)[2];
+  if (arr.length >= n) { round.active = firstEmpty(); if (round.active) return placeCard(r, s); return; }
+  arr.push({ r, s });
+  round.active = firstEmpty();
+  renderRound();
+}
+$("round-cancel").onclick = () => { round = null; showMain(); };
+$("round-save").onclick = () => {
+  if (!bothComplete()) return;
+  if ($("preview").classList.contains("show")) { commitRound(); return; }
+  const res = scoreAB(round.hands[round.aId], round.hands[round.bId]);
+  const a = pname(round.aId), b = pname(round.bId), net = res.net;
+  const detailA = res.A.foul ? "FOUL" : `bunn ${name5(res.A.bot)}, midt ${name5(res.A.mid)}, topp ${name3(res.A.top)} (+${res.A.roy})`;
+  const detailB = res.B.foul ? "FOUL" : `bunn ${name5(res.B.bot)}, midt ${name5(res.B.mid)}, topp ${name3(res.B.top)} (+${res.B.roy})`;
+  round.result = { net, detailA, detailB };
+  $("preview").innerHTML = `<div class="pv-main"><span class="${net >= 0 ? "pos" : "neg"}">${a} ${net >= 0 ? "+" : ""}${net}</span> · <span class="${-net >= 0 ? "pos" : "neg"}">${b} ${-net >= 0 ? "+" : ""}${-net}</span></div>
+    <div class="pv-detail"><b>${a}:</b> ${detailA}<br><b>${b}:</b> ${detailB}</div>`;
+  $("preview").classList.add("show");
+  $("round-save").textContent = "✓ Lagre runde";
+};
+function commitRound() {
+  const { net, detailA, detailB } = round.result;
+  const a = pname(round.aId), b = pname(round.bId);
+  G.rounds.push({ id: "r" + Date.now(), deltas: { [round.aId]: net, [round.bId]: -net },
+    detail: `${a}: ${detailA} — ${b}: ${detailB}` });
+  save(); round = null; showMain();
+};
+$("to-manual").onclick = () => { round = null; openManual(); };
+
+/* ---------- manuell runde ---------- */
+function openManual() {
+  screen("t-manual");
+  $("man-rows").innerHTML = G.players.map(p => `
+    <div class="manrow"><span class="mn" style="color:var(--indigo)">${p.name}</span>
+      <div class="mc"><button data-id="${p.id}" data-d="-1">−</button>
+        <input id="man-${p.id}" type="number" value="0" step="1">
+        <button data-id="${p.id}" data-d="1">+</button></div></div>`).join("");
+  $("man-rows").querySelectorAll("button").forEach(b => b.onclick = () => {
+    const inp = $("man-" + b.dataset.id); inp.value = (parseInt(inp.value, 10) || 0) + (+b.dataset.d); manCheck();
+  });
+  $("man-rows").querySelectorAll("input").forEach(inp => inp.oninput = manCheck);
+  manCheck();
+}
+function manCheck() {
+  const sum = G.players.reduce((s, p) => s + (parseInt($("man-" + p.id).value, 10) || 0), 0);
+  const w = $("man-warn");
+  if (sum === 0) { w.textContent = "✓ summen er 0 — stemmer i OFC"; w.style.color = "var(--matcha)"; }
+  else { w.textContent = `Summen er ${sum > 0 ? "+" : ""}${sum} — poengene skal summere til 0`; w.style.color = "var(--gold)"; }
+}
+$("man-cancel").onclick = showMain;
+$("man-save").onclick = () => {
+  const deltas = {}; let any = false;
+  G.players.forEach(p => { const v = parseInt($("man-" + p.id).value, 10) || 0; deltas[p.id] = v; if (v) any = true; });
+  if (!any) { alert("Fyll inn poengene."); return; }
+  G.rounds.push({ id: "r" + Date.now(), deltas });
+  save(); showMain();
+};
+
+/* ---------- init ---------- */
 const saved = load();
-if (saved) { G = saved; showGame(); }
+if (saved) { G = saved; document.querySelector('#tabs button[data-t="track"]').click(); showMain(); }
 </script>
 </body>
 </html>
