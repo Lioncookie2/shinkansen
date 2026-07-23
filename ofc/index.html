@@ -69,9 +69,10 @@
   .stake-row input { width: 80px; border: 1px solid var(--border); background: rgba(60,45,30,.03);
     border-radius: 10px; padding: 8px; font-size: 15px; text-align: center; font-family: inherit; outline: none; }
   .bigbtn { width: 100%; padding: 15px; border: none; border-radius: 16px; background: var(--grad);
-    color: #fff; font-size: 16px; font-weight: 800; box-shadow: var(--shadow); }
+    color: #fff; font-size: 16px; font-weight: 800; box-shadow: var(--shadow); margin-bottom: 10px; }
   .bigbtn:disabled { opacity: .4; }
-  .bigbtn.ghost { background: none; border: 1.5px solid var(--border); color: var(--muted); box-shadow: none; margin-top: 10px; }
+  .bigbtn.ghost { background: none; border: 1.5px solid var(--border); color: var(--muted); box-shadow: none; }
+  .bigbtn:last-child { margin-bottom: 0; }
 
   .topbtns { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
   .topbtns button { background: none; border: 1px solid var(--border); color: var(--muted);
@@ -90,27 +91,32 @@
   .stat .v { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 17px; font-weight: 900; color: var(--indigo); }
   .stat .k { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
 
-  /* rundehistorikk */
+  /* rundehistorikk / sammendrag (delt) */
   .hround { border-bottom: 1px solid var(--border); padding: 10px 2px; }
   .hround:last-child { border-bottom: none; }
-  .hround .htop { display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; }
+  .hround .htop { display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; gap: 8px; }
+  .hround .htop .nm { font-weight: 800; }
   .hround .hres { font-weight: 800; }
-  .hround .hdetail { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .hround .hdetail { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
   .hround .hx { background: none; border: none; color: var(--muted); opacity: .55; font-size: 15px; padding: 0 4px; }
 
-  /* rundevalg */
-  .selp { display: flex; gap: 8px; margin-bottom: 12px; }
-  .selp .col { flex: 1; }
-  .selp label { display: block; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
-  .selp select { width: 100%; border: 1.5px solid var(--border); background: var(--card); border-radius: 12px;
-    padding: 11px; font-size: 15px; font-weight: 700; color: var(--indigo); font-family: inherit; outline: none; }
+  /* deltaker-valg (gjenbruker .catbtn-lik stil) */
+  .cats { display: flex; flex-wrap: wrap; gap: 8px; }
+  .catbtn { padding: 10px 14px; border-radius: 999px; border: 1.5px solid var(--border);
+    background: none; font-size: 13.5px; font-weight: 700; color: var(--muted); }
+  .catbtn.sel { border-color: var(--accent); color: var(--accent); background: rgba(199,62,58,.06); }
 
-  /* kort-innlegging */
+  /* kamera / kort-innlegging */
+  #cam-preview img { display: block; width: 100%; border-radius: 14px; margin: 10px 0; box-shadow: var(--shadow); }
+  #ocr-status { font-size: 12.5px; color: var(--muted); text-align: center; margin: 8px 0 4px; min-height: 16px; font-weight: 600; }
+
   .hand { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
   .hand h4 { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
   .hand h4 .who { color: var(--accent); }
   .rowline { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .rowline .rl { width: 46px; font-size: 10.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+  .rowline .rl { width: 66px; font-size: 10.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; line-height: 1.3; }
+  .rowline .rl .rs { display: block; text-transform: none; font-weight: 700; font-size: 8.5px; color: #b7a98c; }
+  .rowline .rl .rs.strong { color: var(--matcha); }
   .slots { display: flex; gap: 5px; flex: 1; }
   .slot { flex: 1; max-width: 40px; aspect-ratio: 5/7; border-radius: 7px; border: 1.5px dashed var(--border);
     background: rgba(60,45,30,.02); display: grid; place-items: center; font-size: 14px; font-weight: 800; color: var(--muted); }
@@ -118,9 +124,9 @@
   .slot.active { border-color: var(--accent); border-style: solid; background: rgba(199,62,58,.06); }
   .slot .red { color: #c0392b; } .slot .blk { color: var(--indigo); }
   .handeval { font-size: 11.5px; color: var(--muted); margin-top: 4px; min-height: 16px; }
-  .handeval.foul { color: var(--accent); font-weight: 800; }
+  .handeval .foul { color: var(--accent); font-weight: 800; }
 
-  /* palett */
+  /* palett + gjettetray */
   #palette { position: sticky; bottom: 0; background: var(--bg); padding: 8px 0 0; }
   .palrow { display: flex; gap: 3px; margin-bottom: 3px; justify-content: center; }
   .pcard { flex: 1; max-width: 30px; aspect-ratio: 5/7; border-radius: 6px; border: 1px solid var(--border);
@@ -129,19 +135,8 @@
   .pcard.used { opacity: .22; pointer-events: none; }
   .palhint { text-align: center; font-size: 11.5px; color: var(--muted); margin: 6px 0 10px; font-weight: 600; }
   .palhint b { color: var(--accent); }
-
-  /* resultat-forhåndsvisning */
-  #preview { display: none; background: rgba(51,80,107,.06); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
-  #preview.show { display: block; }
-  #preview .pv-main { text-align: center; font-family: "Zen Kaku Gothic New", sans-serif; font-size: 22px; font-weight: 900; margin-bottom: 6px; }
-  #preview .pv-detail { font-size: 12px; color: var(--muted); line-height: 1.6; }
-
-  .manrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-  .manrow .mn { font-size: 14.5px; font-weight: 700; flex: 1; }
-  .manrow .mc { display: flex; align-items: center; gap: 6px; }
-  .manrow button { width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--border); background: none; font-size: 17px; font-weight: 800; color: var(--indigo); }
-  .manrow input { width: 62px; border: 1px solid var(--border); background: rgba(60,45,30,.03); border-radius: 10px; padding: 7px; font-size: 15px; text-align: center; font-family: inherit; outline: none; }
-  #man-warn { font-size: 12px; font-weight: 600; text-align: center; min-height: 18px; margin: 2px 0 8px; }
+  #guess-tray { margin-bottom: 6px; }
+  #guess-tray .pcard { max-width: 34px; border-color: rgba(199,62,58,.35); }
 </style>
 </head>
 <body>
@@ -164,11 +159,11 @@
       <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Topp</b> — 3 kort (svakest)</div></div>
       <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Midten</b> — 5 kort</div></div>
       <div class="handrow"><div class="cards"><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div><div class="mini">🂠</div></div><div class="lbl"><b>Bunn</b> — 5 kort (sterkest)</div></div>
-      <div class="tip">⚠️ Bunn ≥ Midten ≥ Topp. Bryter du rekkefølgen «fouler» du — hånden er død og du taper 6 til motstanderen (+ deres royalties).</div>
+      <div class="tip">⚠️ Bunn ≥ Midten ≥ Topp. Bryter du rekkefølgen «fouler» du — hånden er død og du taper 6 til hver motstander (+ deres royalties).</div>
     </div>
     <div class="panel">
-      <h3>Poeng (1–6)</h3>
-      <p>Mot hver motstander: <b>+1 per rekke du vinner</b>. Vinner du alle tre («scoop») får du <b>+3 bonus</b> = 6 poeng. Royalties (bonus for sterke hender) legges oppå, og betales selv om du taper rekka.</p>
+      <h3>Poeng (1–6) — mot hver motstander</h3>
+      <p>Med 3 spillere sammenlignes du automatisk mot <b>begge</b> de andre, én og én: <b>+1 per rekke du vinner</b> mot hver. Vinner du alle tre rekkene mot noen («scoop») får du <b>+3 bonus</b> = 6 poeng mot akkurat den personen. Royalties legges oppå og betales selv om du taper rekka.</p>
     </div>
     <div class="panel">
       <h3>Royalties</h3>
@@ -186,7 +181,7 @@
     </div>
     <div class="panel">
       <h3>Slik brukes trackeren</h3>
-      <p>Legg inn spillerne, velg de to som spilte runden (og hvem du regner fra), <b>tapp inn de 13 kortene</b> til hver — appen regner ut royalties, rekker og scoop automatisk. Trykk <b>«✓ Lagre runde»</b>, og poengene tracker seg selv, runde for runde. Spiller om penger? Sett kroneverdi per poeng.</p>
+      <p>Legg inn spillerne, og hver runde: velg hvem som er med (2–3), <b>ta bilde av kortene til hver spiller</b> etter tur — appen prøver å lese kortene automatisk (OCR), og du kan alltid rette opp eller fylle inn manuelt ved å tappe. Når alle hendene er bekreftet, trykk <b>«Regn ut»</b> for å se hele oppgjøret — sjekket mot alle spillerne samtidig — og <b>«Godkjenn & lagre»</b> for å tracke runden.</p>
     </div>
   </div>
 
@@ -209,36 +204,53 @@
     <!-- hovedskjerm -->
     <div class="screen" id="t-main">
       <div class="topbtns"><button id="undo">↩ Angre siste</button><button id="newgame">Nytt spill</button></div>
-      <button class="bigbtn" id="new-round" style="margin-bottom:14px">＋ Ny runde (kort)</button>
+      <button class="bigbtn" id="new-round">＋ Ny runde (kort)</button>
       <div class="panel"><h2>Stillingen</h2><div id="standings"></div></div>
       <div class="panel"><h2>Utvikling</h2><svg id="chart"></svg><div id="legend" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)"></div></div>
       <div class="panel"><h2>Statistikk</h2><div class="statgrid" id="stats"></div></div>
       <div class="panel"><h2>Runder</h2><div id="history"></div></div>
     </div>
 
-    <!-- kort-runde -->
-    <div class="screen" id="t-round">
-      <div class="topbtns"><button id="round-cancel">✕ Avbryt</button></div>
-      <div class="selp">
-        <div class="col"><label>Regner fra (start)</label><select id="sel-a"></select></div>
-        <div class="col"><label>Mot</label><select id="sel-b"></select></div>
+    <!-- velg deltakere -->
+    <div class="screen" id="t-participants">
+      <div class="topbtns"><button id="part-cancel">✕ Avbryt</button></div>
+      <div class="panel">
+        <h2>Hvem spiller denne runden?</h2>
+        <div class="cats" id="part-chips"></div>
+        <p style="margin-top:12px;font-size:12px;color:var(--muted)">Velg 2–3 spillere — OFC spilles maks 3-handed om gangen.</p>
       </div>
-      <div id="hands"></div>
-      <div id="preview"></div>
-      <button class="bigbtn" id="round-save" disabled>Regn ut & se resultat</button>
-      <button class="bigbtn ghost" id="to-manual">Skriv resultat manuelt i stedet</button>
-      <div id="palette"></div>
+      <button class="bigbtn" id="part-go" disabled>Start — ta bilder →</button>
     </div>
 
-    <!-- manuell runde -->
-    <div class="screen" id="t-manual">
-      <div class="topbtns"><button id="man-cancel">✕ Avbryt</button></div>
-      <div class="panel">
-        <h2>Manuell runde — netto poeng</h2>
-        <div id="man-rows"></div>
-        <div id="man-warn"></div>
-        <button class="bigbtn" id="man-save">✓ Lagre runde</button>
+    <!-- kort-innlegging per spiller -->
+    <div class="screen" id="t-round">
+      <div class="topbtns"><button id="round-cancel">✕ Avbryt runden</button></div>
+      <div class="panel" id="cam-panel">
+        <h2 id="cam-title"></h2>
+        <div id="cam-preview"></div>
+        <input type="file" accept="image/*" capture="environment" id="cam-input" style="display:none">
+        <button class="bigbtn" id="cam-take">📷 Ta bilde av kortene</button>
+        <button class="bigbtn ghost" id="cam-ocr" style="display:none">🔍 Les kortene automatisk</button>
+        <div id="ocr-status"></div>
       </div>
+      <div id="hand-edit">
+        <div class="hand">
+          <h4><span class="who" id="edit-who"></span></h4>
+          <div id="edit-rows"></div>
+          <div class="handeval" id="edit-eval"></div>
+        </div>
+        <div id="guess-tray"></div>
+        <button class="bigbtn" id="confirm-hand" disabled>Legg inn kortene</button>
+        <div id="palette"></div>
+      </div>
+    </div>
+
+    <!-- runde-sammendrag -->
+    <div class="screen" id="t-summary">
+      <div class="topbtns"><button id="summary-back">↺ Rediger siste hånd</button></div>
+      <div class="panel"><h2>Oppgjør — sjekket mot alle</h2><div id="summary-list"></div></div>
+      <button class="bigbtn" id="summary-save">✓ Godkjenn & lagre runde</button>
+      <button class="bigbtn ghost" id="summary-cancel">✕ Avbryt runden</button>
     </div>
   </div>
 </div>
@@ -247,19 +259,19 @@
 "use strict";
 const $ = id => document.getElementById(id);
 const COLORS = ["#c73e3a", "#33506b", "#5a8f5d", "#b8860b", "#7d5ba6", "#0e7490"];
-const LS = "ofc-v2";
+const LS = "ofc-v3";
 const SUITS = ["♣", "♦", "♥", "♠"];        // 0..3
 const RED = s => s === 1 || s === 2;
 const RNAME = { 11: "J", 12: "Q", 13: "K", 14: "A" };
 function rlabel(r) { return RNAME[r] || String(r); }
 function cstr(c) { return rlabel(c.r) + SUITS[c.s]; }
 function ckey(c) { return c.r * 4 + c.s; }
+/* rekkefølge kortene tegnes i (topp→bunn på skjermen = svakest→sterkest, som i Regler-fanen) */
+const ROWS = [["top", "Topp", 3], ["mid", "Midten", 5], ["bot", "Bunn", 5]];
 
-/* ---------- pokerlogikk ---------- */
+/* ---------- pokerlogikk (uendret motor, verifisert) ---------- */
 function counts(rs) { const m = {}; rs.forEach(r => m[r] = (m[r] || 0) + 1); return m; }
-function byCount(rs) {
-  return Object.entries(counts(rs)).map(([r, c]) => [+r, c]).sort((a, b) => b[1] - a[1] || b[0] - a[0]);
-}
+function byCount(rs) { return Object.entries(counts(rs)).map(([r, c]) => [+r, c]).sort((a, b) => b[1] - a[1] || b[0] - a[0]); }
 function straightHigh(rs) {
   const u = [...new Set(rs)].sort((a, b) => b - a);
   if (u.length !== 5) return 0;
@@ -306,14 +318,13 @@ function name3(ev) { return ev.cat === 3 ? "tre like" : ev.cat === 1 ? "par " + 
 function royBottom(ev) { if (ev.cat === 8) return ev.tie[0] === 14 ? 25 : 15; return ({ 7: 10, 6: 6, 5: 4, 4: 2 })[ev.cat] || 0; }
 function royMiddle(ev) { if (ev.cat === 8) return ev.tie[0] === 14 ? 50 : 30; return ({ 7: 20, 6: 12, 5: 8, 4: 4, 3: 2 })[ev.cat] || 0; }
 function royTop(ev) { if (ev.cat === 3) return 10 + (ev.tie[0] - 2); if (ev.cat === 1) { const r = ev.tie[0]; return r >= 6 ? r - 5 : 0; } return 0; }
-
 function evalHand(h) { // h = {top:[3], mid:[5], bot:[5]}
   const top = eval3(h.top), mid = eval5(h.mid), bot = eval5(h.bot);
   const foul = cmp(bot, mid) < 0 || cmp(mid, top) < 0;
   const roy = foul ? 0 : royBottom(bot) + royMiddle(mid) + royTop(top);
   return { top, mid, bot, foul, roy };
 }
-/* netto for A mot B (heads-up) */
+/* netto for A mot B (ett par) */
 function scoreAB(hA, hB) {
   const A = evalHand(hA), B = evalHand(hB);
   if (A.foul && B.foul) return { net: 0, A, B };
@@ -325,6 +336,65 @@ function scoreAB(hA, hB) {
   base += cmp(A.top, B.top) > 0 ? 1 : cmp(A.top, B.top) < 0 ? -1 : 0;
   if (base === 3) base = 6; else if (base === -3) base = -6;
   return { net: base + (A.roy - B.roy), A, B };
+}
+/* multi-way: summer alle par (round-robin) — sjekker hver spiller mot ALLE andre, ikke bare én */
+function computeRoundScores(pids, hands) {
+  const deltas = {}; pids.forEach(id => deltas[id] = 0);
+  const evals = {}; pids.forEach(id => evals[id] = evalHand(hands[id]));
+  const pairs = [];
+  for (let i = 0; i < pids.length; i++) for (let j = i + 1; j < pids.length; j++) {
+    const res = scoreAB(hands[pids[i]], hands[pids[j]]);
+    deltas[pids[i]] += res.net; deltas[pids[j]] -= res.net;
+    pairs.push({ a: pids[i], b: pids[j], net: res.net });
+  }
+  return { deltas, evals, pairs };
+}
+
+/* ---------- OCR-hjelpere (best-effort — alt kan alltid rettes manuelt) ---------- */
+function parseRankToken(tok) {
+  if (!tok) return null;
+  const t = tok.trim().toUpperCase().replace(/[^0-9AJQKT]/g, "");
+  if (t === "10" || t === "T" || t === "1O" || t === "IO" || t === "I0") return 10;
+  if (t === "A") return 14;
+  if (t === "K") return 13;
+  if (t === "Q") return 12;
+  if (t === "J") return 11;
+  if (/^[2-9]$/.test(t)) return +t;
+  return null;
+}
+function classifyColor(ctx, box) {
+  const x0 = Math.max(0, Math.round(box.x0)), y0 = Math.max(0, Math.round(box.y0));
+  const w = Math.max(1, Math.round(box.x1 - box.x0)), h = Math.max(1, Math.round(box.y1 - box.y0));
+  let data;
+  try { data = ctx.getImageData(x0, y0, w, h).data; } catch (e) { return "black"; }
+  let rSum = 0, gSum = 0, bSum = 0, n = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 128) continue;
+    rSum += data[i]; gSum += data[i + 1]; bSum += data[i + 2]; n++;
+  }
+  if (!n) return "black";
+  const r = rSum / n, g = gSum / n, b = bSum / n;
+  return (r - (g + b) / 2) > 18 ? "red" : "black";
+}
+function buildGuesses(words, ctx) {
+  const out = [], seen = new Set();
+  (words || []).forEach(w => {
+    const text = w.text, conf = w.confidence != null ? w.confidence : (w.confidence0 || 0);
+    if (conf < 35) return;
+    const rank = parseRankToken(text);
+    if (rank == null) return;
+    const box = w.bbox || { x0: w.x0, y0: w.y0, x1: w.x1, y1: w.y1 };
+    if (!box || box.x1 == null) return;
+    const key = Math.round(box.x0 / 6) + "," + Math.round(box.y0 / 6) + "," + rank;
+    if (seen.has(key)) return; seen.add(key);
+    out.push({ r: rank, color: classifyColor(ctx, box) });
+  });
+  return out.slice(0, 13);
+}
+function defaultSuitFor(color, r, usedSet) {
+  const opts = color === "red" ? [2, 1] : [3, 0]; // hearts→diamonds / spades→clubs
+  for (const s of opts) if (!usedSet.has(r * 4 + s)) return s;
+  return opts[0];
 }
 
 /* ---------- faner ---------- */
@@ -360,7 +430,7 @@ $("start").onclick = () => {
 function pname(id) { const p = G.players.find(x => x.id === id); return p ? p.name : "?"; }
 function totals() { const t = {}; G.players.forEach(p => t[p.id] = 0); G.rounds.forEach(r => { for (const id in r.deltas) t[id] = (t[id] || 0) + r.deltas[id]; }); return t; }
 
-function showMain() { screen("t-main"); renderMain(); }
+function showMain() { round = null; screen("t-main"); renderMain(); }
 function renderMain() {
   const t = totals();
   const order = [...G.players].sort((a, b) => t[b.id] - t[a.id]);
@@ -372,9 +442,7 @@ function renderMain() {
       <span class="nm">${pos === 0 && G.rounds.length ? "👑 " : ""}${p.name}<small>${pos > 0 ? diff + " bak" : G.rounds.length ? "leder" : ""}</small></span>
       <span class="pts ${v > 0 ? "pos" : v < 0 ? "neg" : ""}">${v > 0 ? "+" : ""}${v}<small>poeng${money}</small></span></div>`;
   }).join("");
-  drawChart();
-  renderStats();
-  renderHistory();
+  drawChart(); renderStats(); renderHistory();
 }
 function renderHistory() {
   if (!G.rounds.length) { $("history").innerHTML = `<div style="color:var(--muted);font-size:13px;padding:6px 2px">Ingen runder ennå — trykk «Ny runde».</div>`; return; }
@@ -417,158 +485,219 @@ function drawChart() {
   });
   $("legend").innerHTML = G.players.map((p, i) => `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i % COLORS.length]};margin-right:5px"></span>${p.name}</span>`).join("");
 }
-
 $("undo").onclick = () => { if (G.rounds.length) { G.rounds.pop(); save(); renderMain(); } };
 $("newgame").onclick = () => { if (!confirm("Starte nytt spill? Alt slettes.")) return; localStorage.removeItem(LS); G = null; screen("t-setup"); };
 
-/* ---------- kort-runde ---------- */
-const ROWS = [["bot", "Bunn", 5], ["mid", "Midten", 5], ["top", "Topp", 3]];
-let round = null; // { aId, bId, hands:{aId:{top,mid,bot}, bId:{...}}, active:{pid,row,idx} }
+/* ---------- deltakervalg ---------- */
+let round = null; // { pids, hands:{pid:{top,mid,bot}}, idx, active:{row,idx}|null, photo, guessList, computed }
+let selectedParticipants = new Set();
 function blankHand() { return { top: [], mid: [], bot: [] }; }
-
 $("new-round").onclick = () => {
-  const [a, b] = [G.players[0], G.players[1]];
-  round = { aId: a.id, bId: b.id, hands: {}, active: null };
-  round.hands[a.id] = blankHand(); round.hands[b.id] = blankHand();
-  fillSelectors();
-  round.active = firstEmpty();
-  renderRound();
-  screen("t-round");
+  selectedParticipants = new Set(G.players.slice(0, Math.min(3, G.players.length)).map(p => p.id));
+  renderParticipants();
+  screen("t-participants");
 };
-function fillSelectors() {
-  $("sel-a").innerHTML = G.players.map(p => `<option value="${p.id}" ${p.id === round.aId ? "selected" : ""}>${p.name}</option>`).join("");
-  $("sel-b").innerHTML = G.players.map(p => `<option value="${p.id}" ${p.id === round.bId ? "selected" : ""}>${p.name}</option>`).join("");
+function renderParticipants() {
+  $("part-chips").innerHTML = G.players.map(p => `<button class="catbtn ${selectedParticipants.has(p.id) ? "sel" : ""}" data-id="${p.id}">${p.name}</button>`).join("");
+  $("part-chips").querySelectorAll("button").forEach(b => b.onclick = () => {
+    const id = b.dataset.id;
+    if (selectedParticipants.has(id)) selectedParticipants.delete(id);
+    else { if (selectedParticipants.size >= 3) { alert("OFC spilles med maks 3 spillere om gangen — fjern én først."); return; } selectedParticipants.add(id); }
+    renderParticipants();
+  });
+  $("part-go").disabled = selectedParticipants.size < 2;
 }
-$("sel-a").onchange = () => { changePlayer("a", $("sel-a").value); };
-$("sel-b").onchange = () => { changePlayer("b", $("sel-b").value); };
-function changePlayer(side, id) {
-  const other = side === "a" ? round.bId : round.aId;
-  if (id === other) { // bytt så de ikke er like
-    if (side === "a") round.bId = round.aId; else round.aId = round.bId;
-  }
-  if (side === "a") round.aId = id; else round.bId = id;
-  [round.aId, round.bId].forEach(pid => { if (!round.hands[pid]) round.hands[pid] = blankHand(); });
-  round.active = firstEmpty();
-  fillSelectors(); renderRound();
+$("part-cancel").onclick = showMain;
+$("part-go").onclick = () => {
+  const pids = G.players.filter(p => selectedParticipants.has(p.id)).map(p => p.id);
+  round = { pids, hands: {}, idx: 0, active: null, photo: null, guessList: [] };
+  pids.forEach(id => round.hands[id] = blankHand());
+  showCapture(0);
+};
+
+/* ---------- kamera + innlegging per spiller ---------- */
+function currentPid() { return round.pids[round.idx]; }
+function usedCards() { // på tvers av ALLE spillere i runden (samme kortstokk)
+  const s = new Set();
+  round.pids.forEach(pid => ROWS.forEach(([k]) => (round.hands[pid][k] || []).forEach(c => s.add(ckey(c)))));
+  return s;
 }
-function activePids() { return [round.aId, round.bId]; }
-function firstEmpty() {
-  for (const pid of activePids())
-    for (const [key, , n] of ROWS)
-      if (round.hands[pid][key].length < n) return { pid, row: key, idx: round.hands[pid][key].length };
+function firstEmptyForCurrent() {
+  const pid = currentPid();
+  for (const [key, , n] of ROWS) if (round.hands[pid][key].length < n) return { row: key, idx: round.hands[pid][key].length };
   return null;
 }
-function usedCards() { const s = new Set(); activePids().forEach(pid => ROWS.forEach(([k]) => round.hands[pid][k].forEach(c => s.add(ckey(c))))); return s; }
 function handComplete(pid) { return ROWS.every(([k, , n]) => round.hands[pid][k].length === n); }
-function bothComplete() { return activePids().every(handComplete); }
 
-function renderRound() {
-  $("hands").innerHTML = activePids().map(pid => {
-    const label = pid === round.aId ? "start" : "mot";
-    let rows = ROWS.map(([key, name, n]) => {
-      const arr = round.hands[pid][key];
-      const slots = Array.from({ length: n }, (_, i) => {
-        const c = arr[i];
-        const isActive = round.active && round.active.pid === pid && round.active.row === key && round.active.idx === i;
-        if (c) return `<div class="slot filled" data-pid="${pid}" data-row="${key}" data-idx="${i}"><span class="${RED(c.s) ? "red" : "blk"}">${cstr(c)}</span></div>`;
-        return `<div class="slot${isActive ? " active" : ""}" data-pid="${pid}" data-row="${key}" data-idx="${i}">·</div>`;
-      }).join("");
-      return `<div class="rowline"><div class="rl">${name}</div><div class="slots">${slots}</div></div>`;
+function showCapture(i) {
+  round.idx = i; round.active = firstEmptyForCurrent(); round.photo = null; round.guessList = [];
+  screen("t-round");
+  $("cam-title").textContent = `📷 Ta bilde av kortene til ${pname(currentPid())}`;
+  $("cam-preview").innerHTML = "";
+  $("cam-take").textContent = "📷 Ta bilde av kortene";
+  $("cam-ocr").style.display = "none";
+  $("cam-ocr").disabled = false; $("cam-ocr").textContent = "🔍 Les kortene automatisk";
+  $("ocr-status").textContent = "";
+  renderEdit();
+}
+function placeCard(r, s) {
+  if (!round.active) round.active = firstEmptyForCurrent();
+  if (!round.active) return; // hånd allerede full
+  const pid = currentPid();
+  const arr = round.hands[pid][round.active.row], n = ROWS.find(x => x[0] === round.active.row)[2];
+  if (arr.length >= n) { round.active = firstEmptyForCurrent(); if (round.active) return placeCard(r, s); return; }
+  arr.push({ r, s });
+  round.active = firstEmptyForCurrent();
+  renderEdit();
+}
+function renderEdit() {
+  const pid = currentPid();
+  $("edit-who").textContent = pname(pid);
+  $("edit-rows").innerHTML = ROWS.map(([key, label, n]) => {
+    const arr = round.hands[pid][key];
+    const tag = key === "bot" ? `<span class="rs strong">sterkest</span>` : key === "top" ? `<span class="rs">svakest</span>` : "";
+    const slots = Array.from({ length: n }, (_, i) => {
+      const c = arr[i];
+      const isActive = round.active && round.active.row === key && round.active.idx === i;
+      if (c) return `<div class="slot filled" data-row="${key}" data-idx="${i}"><span class="${RED(c.s) ? "red" : "blk"}">${cstr(c)}</span></div>`;
+      return `<div class="slot${isActive ? " active" : ""}" data-row="${key}" data-idx="${i}">·</div>`;
     }).join("");
-    let ev = "";
-    if (handComplete(pid)) {
-      const h = evalHand(round.hands[pid]);
-      ev = h.foul ? `<div class="handeval foul">⚠️ FOUL — bunn/midt/topp i feil rekkefølge</div>`
-        : `<div class="handeval">Bunn: ${name5(h.bot)} · Midt: ${name5(h.mid)} · Topp: ${name3(h.top)} · royalties +${h.roy}</div>`;
-    }
-    return `<div class="hand"><h4><span class="who">${pname(pid)}</span> <span style="color:var(--muted);font-size:12px;font-weight:600">(${label})</span></h4>${rows}${ev}</div>`;
+    return `<div class="rowline"><div class="rl">${label}${tag}</div><div class="slots">${slots}</div></div>`;
   }).join("");
-  $("hands").querySelectorAll(".slot").forEach(el => el.onclick = () => {
-    const pid = el.dataset.pid, row = el.dataset.row, idx = +el.dataset.idx;
+  $("edit-rows").querySelectorAll(".slot").forEach(el => el.onclick = () => {
+    const row = el.dataset.row, idx = +el.dataset.idx;
     const arr = round.hands[pid][row];
-    if (arr[idx]) { arr.splice(idx, 1); round.active = { pid, row, idx: arr.length }; } // fjern kort
-    else round.active = { pid, row, idx: Math.min(idx, arr.length) };
-    renderRound();
+    if (arr[idx]) { arr.splice(idx, 1); round.active = { row, idx: arr.length }; }
+    else round.active = { row, idx: Math.min(idx, arr.length) };
+    renderEdit();
   });
-  renderPalette();
-  const done = bothComplete();
-  $("round-save").disabled = !done;
-  $("round-save").textContent = done ? "Regn ut & se resultat" : `Legg inn kortene (${activePids().reduce((s, pid) => s + ROWS.reduce((a, [k]) => a + round.hands[pid][k].length, 0), 0)}/26)`;
-  $("preview").classList.remove("show");
+  const done = handComplete(pid);
+  if (done) {
+    const h = evalHand(round.hands[pid]);
+    $("edit-eval").innerHTML = h.foul ? `<span class="foul">⚠️ FOUL — bunn/midt/topp i feil rekkefølge (bunn skal være sterkest)</span>`
+      : `Bunn: ${name5(h.bot)} · Midt: ${name5(h.mid)} · Topp: ${name3(h.top)} · royalties +${h.roy}`;
+  } else $("edit-eval").textContent = "";
+  $("confirm-hand").disabled = !done;
+  $("confirm-hand").textContent = done
+    ? (round.idx === round.pids.length - 1 ? `✓ Bekreft & regn ut →` : `✓ Bekreft hånd for ${pname(pid)} →`)
+    : `Legg inn kortene (${ROWS.reduce((s, [k]) => s + round.hands[pid][k].length, 0)}/13)`;
+  renderPalette(); renderTray();
 }
 function renderPalette() {
   const used = usedCards();
-  const active = round.active;
-  const activeName = active ? `${pname(active.pid)} · ${ROWS.find(r => r[0] === active.row)[1]}` : "alt fylt inn";
-  let html = `<div class="palhint">Tapp kort → fylles i: <b>${activeName}</b></div>`;
-  for (let s = 3; s >= 0; s--) {
-    html += `<div class="palrow">` + [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2].map(r => {
-      const c = { r, s }, u = used.has(ckey(c));
-      return `<button class="pcard ${RED(s) ? "red" : "blk"} ${u ? "used" : ""}" data-r="${r}" data-s="${s}">${rlabel(r)}${SUITS[s]}</button>`;
-    }).join("") + `</div>`;
-  }
+  const activeLbl = round.active ? ROWS.find(r => r[0] === round.active.row)[1] : "alt fylt inn";
+  let html = `<div class="palhint">Tapp kort → fylles i: <b>${activeLbl}</b></div>`;
+  for (let s = 3; s >= 0; s--) html += `<div class="palrow">` + [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2].map(r => {
+    const u = used.has(ckey({ r, s }));
+    return `<button class="pcard ${RED(s) ? "red" : "blk"} ${u ? "used" : ""}" data-r="${r}" data-s="${s}">${rlabel(r)}${SUITS[s]}</button>`;
+  }).join("") + `</div>`;
   $("palette").innerHTML = html;
   $("palette").querySelectorAll(".pcard:not(.used)").forEach(b => b.onclick = () => placeCard(+b.dataset.r, +b.dataset.s));
 }
-function placeCard(r, s) {
-  if (!round.active) round.active = firstEmpty();
-  if (!round.active) return;
-  const { pid, row } = round.active;
-  const arr = round.hands[pid][row], n = ROWS.find(x => x[0] === row)[2];
-  if (arr.length >= n) { round.active = firstEmpty(); if (round.active) return placeCard(r, s); return; }
-  arr.push({ r, s });
-  round.active = firstEmpty();
-  renderRound();
+function renderTray() {
+  const wrap = $("guess-tray");
+  if (!round.guessList.length) { wrap.innerHTML = ""; return; }
+  const used = usedCards();
+  wrap.innerHTML = `<div class="palhint">📸 Gjettet fra bildet — sjekk og tapp inn</div>
+    <div class="palrow" style="flex-wrap:wrap;justify-content:flex-start">` +
+    round.guessList.map(g => {
+      const s = defaultSuitFor(g.color, g.r, used), key = g.r * 4 + s, u = used.has(key);
+      return `<button class="pcard ${g.color === "red" ? "red" : "blk"} ${u ? "used" : ""}" data-r="${g.r}" data-s="${s}">${rlabel(g.r)}${SUITS[s]}</button>`;
+    }).join("") + `</div>`;
+  wrap.querySelectorAll(".pcard:not(.used)").forEach(b => b.onclick = () => placeCard(+b.dataset.r, +b.dataset.s));
 }
-$("round-cancel").onclick = () => { round = null; showMain(); };
-$("round-save").onclick = () => {
-  if (!bothComplete()) return;
-  if ($("preview").classList.contains("show")) { commitRound(); return; }
-  const res = scoreAB(round.hands[round.aId], round.hands[round.bId]);
-  const a = pname(round.aId), b = pname(round.bId), net = res.net;
-  const detailA = res.A.foul ? "FOUL" : `bunn ${name5(res.A.bot)}, midt ${name5(res.A.mid)}, topp ${name3(res.A.top)} (+${res.A.roy})`;
-  const detailB = res.B.foul ? "FOUL" : `bunn ${name5(res.B.bot)}, midt ${name5(res.B.mid)}, topp ${name3(res.B.top)} (+${res.B.roy})`;
-  round.result = { net, detailA, detailB };
-  $("preview").innerHTML = `<div class="pv-main"><span class="${net >= 0 ? "pos" : "neg"}">${a} ${net >= 0 ? "+" : ""}${net}</span> · <span class="${-net >= 0 ? "pos" : "neg"}">${b} ${-net >= 0 ? "+" : ""}${-net}</span></div>
-    <div class="pv-detail"><b>${a}:</b> ${detailA}<br><b>${b}:</b> ${detailB}</div>`;
-  $("preview").classList.add("show");
-  $("round-save").textContent = "✓ Lagre runde";
-};
-function commitRound() {
-  const { net, detailA, detailB } = round.result;
-  const a = pname(round.aId), b = pname(round.bId);
-  G.rounds.push({ id: "r" + Date.now(), deltas: { [round.aId]: net, [round.bId]: -net },
-    detail: `${a}: ${detailA} — ${b}: ${detailB}` });
-  save(); round = null; showMain();
-};
-$("to-manual").onclick = () => { round = null; openManual(); };
 
-/* ---------- manuell runde ---------- */
-function openManual() {
-  screen("t-manual");
-  $("man-rows").innerHTML = G.players.map(p => `
-    <div class="manrow"><span class="mn" style="color:var(--indigo)">${p.name}</span>
-      <div class="mc"><button data-id="${p.id}" data-d="-1">−</button>
-        <input id="man-${p.id}" type="number" value="0" step="1">
-        <button data-id="${p.id}" data-d="1">+</button></div></div>`).join("");
-  $("man-rows").querySelectorAll("button").forEach(b => b.onclick = () => {
-    const inp = $("man-" + b.dataset.id); inp.value = (parseInt(inp.value, 10) || 0) + (+b.dataset.d); manCheck();
+/* ---------- kamera-opptak ---------- */
+$("cam-take").onclick = () => $("cam-input").click();
+$("cam-input").addEventListener("change", e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    round.photo = reader.result;
+    $("cam-preview").innerHTML = `<img src="${round.photo}" alt="Bilde av kortene">`;
+    $("cam-take").textContent = "🔁 Ta nytt bilde";
+    $("cam-ocr").style.display = "block";
+    $("ocr-status").textContent = "";
+  };
+  reader.readAsDataURL(file);
+  e.target.value = "";
+});
+
+/* ---------- OCR (Tesseract.js, lastes kun ved bruk) ---------- */
+let tesseractLoading = null;
+function ensureTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (tesseractLoading) return tesseractLoading;
+  tesseractLoading = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/tesseract.min.js";
+    s.onload = resolve; s.onerror = () => reject(new Error("script-load-failed"));
+    document.head.appendChild(s);
   });
-  $("man-rows").querySelectorAll("input").forEach(inp => inp.oninput = manCheck);
-  manCheck();
+  return tesseractLoading;
 }
-function manCheck() {
-  const sum = G.players.reduce((s, p) => s + (parseInt($("man-" + p.id).value, 10) || 0), 0);
-  const w = $("man-warn");
-  if (sum === 0) { w.textContent = "✓ summen er 0 — stemmer i OFC"; w.style.color = "var(--matcha)"; }
-  else { w.textContent = `Summen er ${sum > 0 ? "+" : ""}${sum} — poengene skal summere til 0`; w.style.color = "var(--gold)"; }
+$("cam-ocr").onclick = async () => {
+  if (!round.photo) return;
+  $("cam-ocr").disabled = true;
+  $("ocr-status").textContent = "Laster kortleser … (kan ta noen sekunder første gang)";
+  try {
+    await ensureTesseract();
+    $("ocr-status").textContent = "Leser kortene …";
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = round.photo; });
+    const scale = Math.min(1, 1000 / img.width);
+    const cv = document.createElement("canvas");
+    cv.width = Math.max(1, Math.round(img.width * scale)); cv.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = cv.getContext("2d");
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    const { data } = await Tesseract.recognize(cv, "eng", {
+      tessedit_char_whitelist: "0123456789AJQKajqk",
+      tessedit_pageseg_mode: "11"
+    });
+    round.guessList = buildGuesses((data && data.words) || [], ctx);
+    $("ocr-status").textContent = round.guessList.length
+      ? `Fant ${round.guessList.length} mulige kort — sjekk fargene og tapp dem inn under 👇`
+      : "Fant ingen kort automatisk — fyll inn manuelt under 👇";
+  } catch (err) {
+    $("ocr-status").textContent = "Klarte ikke lese bildet automatisk — fyll inn manuelt under 👇";
+  } finally {
+    $("cam-ocr").disabled = false;
+    $("cam-ocr").textContent = "🔁 Les på nytt";
+    renderEdit();
+  }
+};
+
+$("confirm-hand").onclick = () => {
+  if (!handComplete(currentPid())) return;
+  if (round.idx < round.pids.length - 1) showCapture(round.idx + 1);
+  else { renderSummary(); screen("t-summary"); }
+};
+$("round-cancel").onclick = () => { if (!confirm("Avbryte runden? Alt du har lagt inn forsvinner.")) return; showMain(); };
+
+/* ---------- sammendrag ---------- */
+function renderSummary() {
+  const { deltas, evals, pairs } = computeRoundScores(round.pids, round.hands);
+  round.computed = { deltas, evals, pairs };
+  $("summary-list").innerHTML = round.pids.map(pid => {
+    const ev = evals[pid], d = deltas[pid];
+    const vsLines = pairs.filter(p => p.a === pid || p.b === pid).map(p => {
+      const oppId = p.a === pid ? p.b : p.a, net = p.a === pid ? p.net : -p.net;
+      return `mot ${pname(oppId)}: <b class="${net >= 0 ? "pos" : "neg"}">${net >= 0 ? "+" : ""}${net}</b>`;
+    }).join(" · ");
+    const handTxt = ev.foul ? "⚠️ FOUL" : `bunn ${name5(ev.bot)}, midt ${name5(ev.mid)}, topp ${name3(ev.top)} (+${ev.roy})`;
+    return `<div class="hround"><div class="htop"><span class="nm">${pname(pid)}</span><span class="hres ${d >= 0 ? "pos" : "neg"}">${d >= 0 ? "+" : ""}${d}</span></div>
+      <div class="hdetail">${handTxt}<br>${vsLines}</div></div>`;
+  }).join("");
 }
-$("man-cancel").onclick = showMain;
-$("man-save").onclick = () => {
-  const deltas = {}; let any = false;
-  G.players.forEach(p => { const v = parseInt($("man-" + p.id).value, 10) || 0; deltas[p.id] = v; if (v) any = true; });
-  if (!any) { alert("Fyll inn poengene."); return; }
-  G.rounds.push({ id: "r" + Date.now(), deltas });
+$("summary-back").onclick = () => { showCapture(round.pids.length - 1); };
+$("summary-cancel").onclick = () => { if (!confirm("Avbryte runden? Ingenting lagres.")) return; showMain(); };
+$("summary-save").onclick = () => {
+  const { deltas, evals } = round.computed;
+  const detail = round.pids.map(pid => {
+    const ev = evals[pid];
+    return `${pname(pid)}: ${ev.foul ? "FOUL" : `bunn ${name5(ev.bot)}, midt ${name5(ev.mid)}, topp ${name3(ev.top)} (+${ev.roy})`}`;
+  }).join(" — ");
+  G.rounds.push({ id: "r" + Date.now(), deltas, detail });
   save(); showMain();
 };
 
