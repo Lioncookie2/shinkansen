@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4ede0">
+<title>Skjult oppdrag · MilesTech Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4ede0; --card: #fcf8f0; --border: rgba(60,45,30,.12);
+    --text: #27221b; --muted: #8a7f6d; --accent: #c73e3a; --indigo: #33506b;
+    --matcha: #5a8f5d; --gold: #b8860b;
+    --grad: linear-gradient(135deg, #c73e3a, #e0632e);
+    --shadow: 0 8px 30px rgba(90,70,40,.13);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center;
+    padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); }
+  button { font-family: inherit; cursor: pointer; }
+  h1 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 27px; text-align: center; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { text-align: center; font-size: 12.5px; color: var(--muted); margin: 4px 0 16px; line-height: 1.5; }
+  a.back { position: absolute; top: calc(18px + env(safe-area-inset-top)); left: 14px; text-decoration: none;
+    color: var(--muted); font-size: 13px; font-weight: 600; }
+
+  .screen { width: 100%; max-width: 420px; display: none; }
+  .screen.show { display: block; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .panel h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-bottom: 12px; }
+
+  .cats { display: flex; flex-wrap: wrap; gap: 8px; }
+  .catbtn { padding: 10px 14px; border-radius: 999px; border: 1.5px solid var(--border);
+    background: none; font-size: 13px; font-weight: 700; color: var(--muted); transition: all .15s; }
+  .catbtn.sel { border-color: var(--accent); color: var(--accent); background: rgba(199,62,58,.06); }
+  .name-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .name-row input { flex: 1; border: 1px solid var(--border); background: rgba(60,45,30,.03);
+    border-radius: 12px; padding: 11px 14px; font-size: 15px; font-family: inherit; outline: none; color: var(--text); }
+  .name-row input:focus { border-color: var(--accent); }
+  .name-row button { width: 46px; border-radius: 12px; border: none; background: var(--grad); color: #fff; font-size: 22px; }
+  .plist { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ptag { display: flex; align-items: center; gap: 6px; background: rgba(51,80,107,.08);
+    color: var(--indigo); font-size: 13px; font-weight: 700; padding: 7px 8px 7px 13px; border-radius: 999px; }
+  .ptag button { background: none; border: none; color: var(--indigo); opacity: .6; font-size: 15px; padding: 0 4px; }
+  .durrow { display: flex; gap: 8px; }
+  .durbtn { flex: 1; padding: 13px 4px; border-radius: 14px; border: 2px solid var(--border);
+    background: none; font-size: 16px; font-weight: 900; color: var(--muted); font-family: "Zen Kaku Gothic New", sans-serif; }
+  .durbtn small { display: block; font-size: 10px; font-weight: 600; color: var(--muted); margin-top: 2px; font-family: "Inter"; }
+  .durbtn.sel { border-color: var(--accent); color: var(--accent); background: rgba(199,62,58,.06); }
+  .bigbtn { width: 100%; padding: 16px; border: none; border-radius: 16px; background: var(--grad);
+    color: #fff; font-size: 16px; font-weight: 800; box-shadow: var(--shadow); }
+  .bigbtn:disabled { opacity: .4; }
+  .bigbtn.ghost { background: none; border: 1.5px solid var(--border); color: var(--muted); box-shadow: none; margin-top: 10px; }
+  .bigbtn.go { background: var(--matcha); }
+
+  /* pass telefonen */
+  #pass-name { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 30px; font-weight: 900; text-align: center; margin: 34px 0 6px; }
+  .pass-hint { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+  #reveal-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow);
+    min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 26px; text-align: center; user-select: none; -webkit-user-select: none; margin-bottom: 16px; }
+  #reveal-card .tap { font-size: 14px; font-weight: 700; color: var(--muted); }
+  #reveal-card .mission { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 21px; font-weight: 900; line-height: 1.35; }
+  #reveal-card .catlbl { font-size: 12px; color: var(--muted); } #reveal-card .catlbl b { color: var(--accent); }
+  #reveal-card .timelbl { font-size: 13px; font-weight: 700; color: var(--indigo); margin-top: 2px; }
+
+  /* timer */
+  .timer-wrap { text-align: center; margin-top: 20px; }
+  .timer-emoji { font-size: 54px; }
+  #countdown { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 66px; color: var(--indigo);
+    font-variant-numeric: tabular-nums; line-height: 1.05; margin: 8px 0 2px; }
+  #countdown.done { color: var(--accent); }
+  #timer-note { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+  #timer-note b { color: var(--accent); }
+
+  /* reveal / gjetting */
+  .rv-head { text-align: center; margin: 16px 0 8px; }
+  .rv-count { font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .rv-name { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 30px; font-weight: 900; }
+  .rv-q { text-align: center; font-size: 15px; color: #55493a; margin: 6px 0 18px; line-height: 1.5; }
+  .rv-mission { background: rgba(199,62,58,.06); border: 1px solid rgba(199,62,58,.2); border-radius: 16px;
+    padding: 16px; text-align: center; font-family: "Zen Kaku Gothic New", sans-serif; font-size: 19px; font-weight: 900;
+    line-height: 1.35; margin-bottom: 16px; }
+  .yn { display: flex; gap: 10px; margin-bottom: 8px; }
+  .yn button { flex: 1; padding: 15px; border-radius: 14px; border: 2px solid var(--border); background: none;
+    font-size: 16px; font-weight: 800; color: var(--indigo); }
+  .yn button.ja { border-color: var(--matcha); color: #3c6b3f; }
+  .yn button.nei { border-color: var(--accent); color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; justify-content: center; }
+  .chip { padding: 10px 15px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--card);
+    font-size: 14px; font-weight: 700; color: var(--indigo); }
+  .chip.on { border-color: var(--matcha); background: rgba(90,143,93,.12); color: #3c6b3f; }
+  .rv-hint { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+
+  /* resultat */
+  .res-emoji { text-align: center; font-size: 52px; margin: 12px 0 4px; }
+  .res-title { text-align: center; font-family: "Zen Kaku Gothic New", sans-serif; font-size: 24px; font-weight: 900; margin-bottom: 4px; }
+  .res-sub { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .scorerow { display: flex; align-items: center; justify-content: space-between; padding: 11px 4px; border-bottom: 1px solid var(--border); }
+  .scorerow:last-child { border-bottom: none; }
+  .scorerow .nm { font-size: 15px; font-weight: 700; }
+  .scorerow .pt { font-family: "Zen Kaku Gothic New", sans-serif; font-size: 20px; font-weight: 900; color: var(--indigo); }
+</style>
+</head>
+<body>
+<a class="back" href="../">← Games</a>
+<h1>Skjult oppdrag <span>🤫</span></h1>
+<div class="sub">Alle får et hemmelig oppdrag de skal gjøre i smug innen tiden er ute. Etterpå gjetter dere hvem som hadde hva!</div>
+
+<!-- SETUP -->
+<div class="screen show" id="s-setup">
+  <div class="panel">
+    <h2>Kategorier</h2>
+    <div class="cats" id="cats"></div>
+  </div>
+  <div class="panel">
+    <h2>Spillere (min. 3)</h2>
+    <div class="name-row"><input id="pname" placeholder="Navn …" maxlength="14" autocomplete="off"><button id="padd">+</button></div>
+    <div class="plist" id="plist"></div>
+  </div>
+  <div class="panel">
+    <h2>Tid til å gjennomføre</h2>
+    <div class="durrow" id="durrow">
+      <button class="durbtn" data-m="15">15<small>min</small></button>
+      <button class="durbtn sel" data-m="30">30<small>min</small></button>
+      <button class="durbtn" data-m="45">45<small>min</small></button>
+      <button class="durbtn" data-m="60">60<small>min</small></button>
+    </div>
+  </div>
+  <button class="bigbtn" id="start" disabled>Del ut oppdrag</button>
+</div>
+
+<!-- PASS TELEFONEN -->
+<div class="screen" id="s-pass">
+  <div id="pass-name"></div>
+  <div class="pass-hint">Se oppdraget ditt i smug 🤫 — ikke la de andre se!</div>
+  <div id="reveal-card"><div class="tap">Trykk og hold for å se oppdraget ditt</div></div>
+  <button class="bigbtn" id="next-player" disabled>Gi videre →</button>
+</div>
+
+<!-- TIMER -->
+<div class="screen" id="s-timer">
+  <div class="timer-wrap">
+    <div class="timer-emoji">⏱️</div>
+    <div id="countdown">--:--</div>
+    <div id="timer-note"></div>
+    <button class="bigbtn go" id="to-reveal">Tiden er ute — avslør & gjett!</button>
+    <button class="bigbtn ghost" id="abort">Avbryt oppdraget</button>
+  </div>
+</div>
+
+<!-- REVEAL / GJETTING -->
+<div class="screen" id="s-reveal">
+  <div class="rv-head"><div class="rv-count" id="rv-count"></div><div class="rv-name" id="rv-name"></div></div>
+  <div id="rv-body"></div>
+</div>
+
+<!-- RESULTAT -->
+<div class="screen" id="s-result">
+  <div class="res-emoji">🏆</div>
+  <div class="res-title" id="res-title"></div>
+  <div class="res-sub">Poeng: +1 for hver riktig gjetning · +3 hvis ingen tok deg (og du fullførte)</div>
+  <div class="panel" id="res-list"></div>
+  <button class="bigbtn" id="again">Ny runde (samme gjeng)</button>
+  <button class="bigbtn ghost" id="to-setup">Endre spillere / kategorier</button>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const LS = "oppdrag-v1";
+
+const MISSIONS = {
+  "Sosialt & prat": [
+    "Få noen til å si ordet «potet» — uten å si det selv.",
+    "Bruk ordet «faktisk» minst 10 ganger i samtaler.",
+    "Snik inn ordet «pingvin» i en samtale helt naturlig.",
+    "Få hele gruppen til å le av noe du sier.",
+    "Kall én person konsekvent ved feil navn.",
+    "Få noen til å gi deg en high five.",
+    "Bruk et ordtak helt feil med vilje i en setning.",
+    "Snik inn tre filmtitler i vanlig prat.",
+    "Få to andre til å være uenige om noe smått.",
+    "Still samme spørsmål til tre forskjellige personer.",
+    "Avslutt tre setninger med «…eller hva?»",
+    "Få noen til å fullføre en setning for deg."
+  ],
+  "Fysisk & bevegelse": [
+    "Stå på ett bein i 30 sekunder uten at noen merker det.",
+    "Ta deg til nesa hver gang noen sier navnet ditt.",
+    "Flytt en gjenstand sakte over til et annet bord.",
+    "Klø deg på hodet hver gang noen ler.",
+    "Gjør fem knebøy når ingen ser på deg.",
+    "Bytt sitteplass med noen uten å si et ord.",
+    "Hold én hånd i lomma i 10 minutter.",
+    "Blunk til samme person tre ganger i løpet av runden.",
+    "Strekk deg og gjesp overdrevent hvert femte minutt.",
+    "Gå én gang baklengs ut av rommet.",
+    "Klapp én gang hver gang noen reiser seg.",
+    "Berør tre forskjellige vegger i løpet av tiden."
+  ],
+  "Snik & lure": [
+    "Ta en snacks fra tallerkenen til naboen uten at de merker det.",
+    "Ta et hemmelig bilde med noen i bakgrunnen.",
+    "Gjem en gjenstand og se hvem som leter etter den.",
+    "Ta på deg noe (caps, briller) uten at noen kommenterer det.",
+    "Lat som du får en viktig telefon.",
+    "Legg en teskje i lomma til noen — snilt.",
+    "Skriv navnet ditt på en lapp og gjem den et sted.",
+    "Snik en emoji-melding til familiechatten uten å bli tatt.",
+    "Bytt to gjenstander om på bordet uten at noen ser.",
+    "Lat som du har mistet noe og let ivrig etter det.",
+    "Endre ringetonen din i smug.",
+    "Sett en alarm som ringer om noen minutter — og lat som ingenting."
+  ],
+  "Skuespill & følelser": [
+    "Vær superentusiastisk over alt i fem minutter.",
+    "Vær mystisk og hemmelighetsfull hele runden.",
+    "Lat som du har glemt navnet på en helt vanlig gjenstand.",
+    "Reager overdrevet på alt som skjer.",
+    "Vær unaturlig høflig mot absolutt alle.",
+    "Snakk som en nyhetsoppleser når du sier noe.",
+    "Gi overdrevne komplimenter til minst tre personer.",
+    "Lat som du planlegger noe stort og mystisk.",
+    "Vær hemmelig «forelsket» i en stol eller gjenstand.",
+    "Lat som du er en detektiv som løser en sak.",
+    "Vær mistenkelig fornøyd uten grunn.",
+    "Hviske-snakk i fem minutter uten at noen kommenterer det."
+  ],
+  "Mat & drikke": [
+    "Få noen til å dele maten eller snacksen sin med deg.",
+    "Ta en liten slurk hver gang noen sier «ja».",
+    "Rør i koppen/glasset ditt i nøyaktig ett minutt.",
+    "Bygg et lite tårn av noe spiselig.",
+    "Få noen til å smake på noe.",
+    "Spis noe i ørsmå biter i fem minutter.",
+    "Foreslå en skål for noe helt tilfeldig.",
+    "Tilby deg å rydde — men bare halvveis.",
+    "Få noen til å hente noe til deg fra kjøkkenet.",
+    "Ha alltid noe i hånda du liksom skal spise."
+  ],
+  "Familie-spesial": [
+    "Få mamma eller pappa til å le uten å fortelle en vits.",
+    "Gi en overraskende klem til noen.",
+    "Ros noen for noe de gjorde tidligere i dag.",
+    "Få noen til å fortelle en historie fra da de var liten.",
+    "Start en «bølge» rundt bordet uten å forklare hvorfor.",
+    "Få familien til å gjette en tanke du «tenker på».",
+    "Lag et hemmelig håndtegn med én person.",
+    "Få noen til å synge én linje av en sang.",
+    "Foreslå en helt tilfeldig familieaktivitet.",
+    "Få tre personer til å se samme retning som deg."
+  ]
+};
+const CATNAMES = Object.keys(MISSIONS);
+
+let selectedCats = new Set(CATNAMES);
+const names = [];
+let durationMin = 30;
+let game = null;
+let revealed = false, hasSeen = false;
+let tickIv = null;
+
+/* ---------- setup ---------- */
+function renderCats() {
+  $("cats").innerHTML = CATNAMES.map(c => `<button class="catbtn ${selectedCats.has(c) ? "sel" : ""}" data-c="${c}">${c}</button>`).join("");
+  $("cats").querySelectorAll(".catbtn").forEach(b => b.onclick = () => {
+    const c = b.dataset.c;
+    if (selectedCats.has(c)) { if (selectedCats.size > 1) selectedCats.delete(c); }
+    else selectedCats.add(c);
+    renderCats(); updateStart();
+  });
+}
+renderCats();
+function renderNames() {
+  $("plist").innerHTML = names.map((n, i) => `<span class="ptag">${n}<button data-i="${i}">✕</button></span>`).join("");
+  $("plist").querySelectorAll("button").forEach(b => b.onclick = () => { names.splice(+b.dataset.i, 1); renderNames(); updateStart(); });
+  updateStart();
+}
+function addName() { const n = $("pname").value.trim(); if (!n || names.length >= 12) return; names.push(n); $("pname").value = ""; renderNames(); $("pname").focus(); }
+$("padd").onclick = addName;
+$("pname").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
+$("durrow").querySelectorAll(".durbtn").forEach(b => b.onclick = () => {
+  durationMin = +b.dataset.m;
+  $("durrow").querySelectorAll(".durbtn").forEach(x => x.classList.remove("sel"));
+  b.classList.add("sel");
+});
+function updateStart() { $("start").disabled = names.length < 3 || selectedCats.size === 0; }
+function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("show")); $(id).classList.add("show"); }
+
+/* ---------- del ut ---------- */
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function dealMissions() {
+  const pool = [];
+  [...selectedCats].forEach(c => MISSIONS[c].forEach(m => pool.push({ text: m, cat: c })));
+  shuffle(pool);
+  return names.map((_, i) => pool[i % pool.length]);
+}
+$("start").onclick = () => {
+  game = {
+    players: [...names], missions: dealMissions(), durationMin,
+    endTime: null, scores: names.map(() => 0),
+    phase: "pass", passIdx: 0, revealIdx: 0, revealStep: "ask"
+  };
+  saveGame(); startPass();
+};
+
+/* ---------- pass telefonen ---------- */
+function startPass() { game.passIdx = 0; show("s-pass"); showPass(); }
+function showPass() {
+  const p = game.players[game.passIdx];
+  $("pass-name").textContent = "📱 " + p;
+  $("next-player").textContent = game.passIdx === game.players.length - 1 ? "Klar — start klokka →" : "Gi videre →";
+  resetCard();
+}
+function resetCard() {
+  revealed = false; hasSeen = false;
+  $("next-player").disabled = true;
+  $("reveal-card").innerHTML = `<div class="tap">Trykk og hold for å se oppdraget ditt</div>`;
+}
+function showMission() {
+  if (revealed) return;
+  revealed = true; hasSeen = true;
+  const m = game.missions[game.passIdx];
+  $("reveal-card").innerHTML = `
+    <div class="catlbl">Kategori: <b>${m.cat}</b></div>
+    <div class="mission">${m.text}</div>
+    <div class="timelbl">⏱️ Du har ${game.durationMin} minutter — gjør det i smug!</div>`;
+  $("next-player").disabled = false;
+}
+function hideMission() {
+  if (!revealed) return;
+  revealed = false;
+  $("reveal-card").innerHTML = hasSeen
+    ? `<div class="tap">🔒 Skjult — hold inne igjen for å se, eller «Gi videre»</div>`
+    : `<div class="tap">Trykk og hold for å se oppdraget ditt</div>`;
+}
+const card = $("reveal-card");
+card.addEventListener("pointerdown", e => { e.preventDefault(); showMission(); });
+card.addEventListener("pointerup", hideMission);
+card.addEventListener("pointerleave", hideMission);
+card.addEventListener("contextmenu", e => e.preventDefault());
+$("next-player").onclick = () => {
+  if (game.passIdx < game.players.length - 1) { game.passIdx++; saveGame(); showPass(); }
+  else startTimer();
+};
+
+/* ---------- timer ---------- */
+function startTimer() {
+  if (!game.endTime) game.endTime = Date.now() + game.durationMin * 60000;
+  game.phase = "timer"; saveGame();
+  show("s-timer"); runTicker();
+}
+function runTicker() {
+  if (tickIv) clearInterval(tickIv);
+  tick();
+  tickIv = setInterval(tick, 1000);
+}
+function tick() {
+  const rem = game.endTime - Date.now();
+  const cd = $("countdown");
+  if (rem <= 0) {
+    cd.textContent = "00:00"; cd.classList.add("done");
+    $("timer-note").innerHTML = "<b>Tiden er ute!</b> Samle gjengen og gjett hvem som gjorde hva.";
+    $("to-reveal").textContent = "Avslør & gjett! 🕵️";
+    if (!game._buzzed) { game._buzzed = true; if (navigator.vibrate) navigator.vibrate([300, 120, 300]); }
+    clearInterval(tickIv); tickIv = null;
+  } else {
+    const mm = Math.floor(rem / 60000), ss = Math.floor((rem % 60000) / 1000);
+    cd.textContent = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+    $("timer-note").innerHTML = `Gjør oppdraget ditt <b>uten at noen merker det</b>. Legg fra deg telefonen så lenge — klokka går videre.`;
+  }
+}
+$("to-reveal").onclick = () => { if (tickIv) { clearInterval(tickIv); tickIv = null; } startReveal(); };
+$("abort").onclick = () => { if (!confirm("Avbryte oppdraget? Alt nullstilles.")) return; clearGame(); };
+
+/* ---------- reveal / gjetting ---------- */
+function startReveal() { game.phase = "reveal"; game.revealIdx = 0; game.revealStep = "ask"; game.guessers = []; saveGame(); show("s-reveal"); renderReveal(); }
+function renderReveal() {
+  const i = game.revealIdx, name = game.players[i], m = game.missions[i];
+  $("rv-count").textContent = `Person ${i + 1} av ${game.players.length}`;
+  $("rv-name").textContent = name;
+  const body = $("rv-body");
+  if (game.revealStep === "ask") {
+    body.innerHTML = `<div class="rv-q">Hva tror dere <b>${name}</b> hadde som skjult oppdrag?<br>Alle gjetter høyt — så trykk fasit.</div>
+      <button class="bigbtn" id="show-fasit">Vis fasit 🔎</button>`;
+    $("show-fasit").onclick = () => { game.revealStep = "done"; saveGame(); renderReveal(); };
+  } else if (game.revealStep === "done") {
+    body.innerHTML = `<div class="rv-mission">${m.text}</div>
+      <div class="rv-q">Fullførte ${name} oppdraget?</div>
+      <div class="yn"><button class="nei" id="did-no">Nei / feiget ut</button><button class="ja" id="did-yes">Ja!</button></div>`;
+    $("did-no").onclick = () => { finishPerson(false); };
+    $("did-yes").onclick = () => { game.revealStep = "who"; game.guessers = []; saveGame(); renderReveal(); };
+  } else { // who guessed
+    const others = game.players.map((n, j) => ({ n, j })).filter(o => o.j !== i);
+    body.innerHTML = `<div class="rv-mission">${m.text}</div>
+      <div class="rv-q">Hvem gjettet <b>riktig</b>? Trykk på navnene.</div>
+      <div class="chips" id="guess-chips">${others.map(o => `<button class="chip ${game.guessers.includes(o.j) ? "on" : ""}" data-j="${o.j}">${o.n}</button>`).join("")}</div>
+      <div class="rv-hint">Ingen tok deg? Da får ${name} <b>+3</b> for å ha gjort det i smug 🤫</div>
+      <button class="bigbtn" id="next-person">${i === game.players.length - 1 ? "Se resultatet 🏆" : "Neste person →"}</button>`;
+    $("guess-chips").querySelectorAll(".chip").forEach(b => b.onclick = () => {
+      const j = +b.dataset.j;
+      if (game.guessers.includes(j)) game.guessers = game.guessers.filter(x => x !== j);
+      else game.guessers.push(j);
+      saveGame(); renderReveal();
+    });
+    $("next-person").onclick = () => { finishPerson(true); };
+  }
+}
+function finishPerson(completed) {
+  const i = game.revealIdx;
+  if (completed) {
+    game.guessers.forEach(j => game.scores[j] += 1);
+    game.scores[i] += (game.guessers.length === 0 ? 3 : 1);
+  }
+  if (i < game.players.length - 1) { game.revealIdx++; game.revealStep = "ask"; game.guessers = []; saveGame(); renderReveal(); }
+  else { game.phase = "result"; saveGame(); showResult(); }
+}
+
+/* ---------- resultat ---------- */
+function showResult() {
+  show("s-result");
+  const order = game.players.map((n, i) => ({ n, s: game.scores[i] })).sort((a, b) => b.s - a.s);
+  const top = order[0].s, winners = order.filter(o => o.s === top).map(o => o.n);
+  $("res-title").textContent = top === 0 ? "Ingen tok poeng 😅" : (winners.length > 1 ? winners.join(" & ") + " vinner!" : winners[0] + " vinner!");
+  $("res-list").innerHTML = order.map((o, idx) => `<div class="scorerow">
+    <span class="nm">${idx === 0 && top > 0 ? "👑 " : ""}${o.n}</span><span class="pt">${o.s} p</span></div>`).join("");
+}
+$("again").onclick = () => {
+  game.missions = dealMissions(); game.scores = game.players.map(() => 0);
+  game.endTime = null; game._buzzed = false; game.phase = "pass"; game.passIdx = 0;
+  saveGame(); startPass();
+};
+$("to-setup").onclick = () => { clearGame(); };
+
+/* ---------- lagring (overlever at telefonen låses under nedtelling) ---------- */
+function saveGame() { try { localStorage.setItem(LS, JSON.stringify(game)); } catch (e) {} }
+function clearGame() { localStorage.removeItem(LS); game = null; if (tickIv) clearInterval(tickIv); show("s-setup"); }
+function restore() {
+  let g; try { g = JSON.parse(localStorage.getItem(LS)); } catch (e) {}
+  if (!g || !g.players) return;
+  game = g;
+  if (game.phase === "pass") { startPass(); }
+  else if (game.phase === "timer") { show("s-timer"); runTicker(); }
+  else if (game.phase === "reveal") { show("s-reveal"); renderReveal(); }
+  else if (game.phase === "result") { showResult(); }
+}
+restore();
+</script>
+</body>
+</html>
