@@ -719,8 +719,14 @@ $("cam-ocr").onclick = async () => {
     const cells = cellRectsFrac(round.align);
     const pid = currentPid();
     const used = usedCards();
-    worker = await Tesseract.createWorker("eng");
-    await worker.setParameters({ tessedit_char_whitelist: "0123456789AJQKajqk", tessedit_pageseg_mode: "10" });
+    /* v4.1.4 krever eksplisitt load→loadLanguage→initialize — createWorker("eng")
+       alene lar motoren stå uinitialisert (native API forblir null), som gjør at
+       setParameters/recognize feiler stille med "Klarte ikke lese bildet". */
+    worker = await Tesseract.createWorker();
+    await worker.load();
+    await worker.loadLanguage("eng");
+    await worker.initialize("eng");
+    await worker.setParameters({ tessedit_char_whitelist: "0123456789AJQKajqk", tessedit_pageseg_mode: "8" });
     let filled = 0;
     for (let i = 0; i < cells.length; i++) {
       const cell = cells[i];
