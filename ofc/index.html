@@ -113,10 +113,8 @@
   #align-wrap { margin-top: 4px; }
   #align-hint { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 8px; line-height: 1.5; }
   #align-hint b { color: var(--accent); }
-  #align-box { position: relative; width: 100%; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); touch-action: none; }
+  #align-box { position: relative; width: 100%; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
   #align-img { display: block; width: 100%; }
-  #align-svg { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
-  #align-svg circle { cursor: grab; }
 
   .hand { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
   .hand h4 { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
@@ -239,8 +237,8 @@
         <input type="file" accept="image/*" capture="environment" id="cam-input" style="display:none">
         <button class="bigbtn" id="cam-take">📷 Ta bilde av kortene</button>
         <div id="align-wrap" style="display:none">
-          <div id="align-hint">Fotografer med <b>Topp øverst</b>, <b>Midten i midten</b>, <b>Bunn nederst</b>. Dra de to røde prikkene så ruta dekker akkurat de 13 kortene.</div>
-          <div id="align-box"><img id="align-img"><svg id="align-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>
+          <div id="align-hint">Legg kortene i tre rader (3-5-5) — appen kjenner selv igjen raden med 3 kort som Topp.</div>
+          <div id="align-box"><img id="align-img"></div>
           <button class="bigbtn ghost" id="cam-ocr" style="margin-top:12px">🔍 Les kortene automatisk</button>
         </div>
         <div id="ocr-status"></div>
@@ -362,81 +360,6 @@ function computeRoundScores(pids, hands) {
   return { deltas, evals, pairs };
 }
 
-/* ---------- OCR-hjelpere (best-effort — alt kan alltid rettes manuelt) ----------
-   Strategien: brukeren justerer en 13-celle rute over bildet (Topp 3 / Midten 5 / Bunn 5),
-   så vi vet EKSAKT hvilken celle som er hvilken plass — dette løser "feil plassering".
-   Hver celle leses individuelt (beskjært + kontrastforsterket) i stedet for hele bildet
-   under ett, som gir mye bedre treffsikkerhet enn løs helbilde-OCR. */
-function parseRankToken(tok) {
-  if (!tok) return null;
-  const t = tok.trim().toUpperCase().replace(/[^0-9AJQKT]/g, "");
-  if (t === "10" || t === "T" || t === "1O" || t === "IO" || t === "I0") return 10;
-  if (t === "A") return 14;
-  if (t === "K") return 13;
-  if (t === "Q") return 12;
-  if (t === "J") return 11;
-  if (/^[2-9]$/.test(t)) return +t;
-  return null;
-}
-function defaultSuitFor(color, r, usedSet) {
-  const opts = color === "red" ? [2, 1] : [3, 0]; // hearts→diamonds / spades→clubs
-  for (const s of opts) if (!usedSet.has(r * 4 + s)) return s;
-  return opts[0];
-}
-/* fraksjonelle celle-rektangler (0..1) for justeringsruta — ren funksjon, samme
-   kilde brukes både til å tegne rutenettet og til å beskjære bildet. */
-function cellRectsFrac(a) {
-  const out = [];
-  ROWS.forEach(([key, , n], r) => {
-    const y0 = a.y0 + (a.y1 - a.y0) * r / 3, y1 = a.y0 + (a.y1 - a.y0) * (r + 1) / 3;
-    for (let c = 0; c < n; c++) {
-      const x0 = a.x0 + (a.x1 - a.x0) * c / n, x1 = a.x0 + (a.x1 - a.x0) * (c + 1) / n;
-      out.push({ row: key, idx: c, x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
-    }
-  });
-  return out;
-}
-function meanLuminance(data) {
-  let sum = 0;
-  for (let i = 0; i < data.length; i += 4) sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
-  return sum / (data.length / 4);
-}
-function classifyInkColor(data, threshold) {
-  let rSum = 0, gSum = 0, bSum = 0, n = 0;
-  for (let i = 0; i < data.length; i += 4) {
-    const lum = (data[i] + data[i + 1] + data[i + 2]) / 3;
-    if (lum < threshold) { rSum += data[i]; gSum += data[i + 1]; bSum += data[i + 2]; n++; }
-  }
-  if (!n) return "black";
-  const r = rSum / n, g = gSum / n, b = bSum / n;
-  return (r - (g + b) / 2) > 12 ? "red" : "black";
-}
-/* beskjærer toppvenstre hjørne av en celle (der valør+kulør står), forstørrer og
-   svart/hvitt-terskler den til en liten OCR-klar canvas; kuløren (rød/svart) leses
-   fra blekk-pikslene FØR terskling (mye mer treffsikkert enn å snitte hele boksen). */
-function analyzeCell(srcCanvas, sx, sy, sw, sh) {
-  const cw = Math.max(6, Math.round(sw * 0.42)), ch = Math.max(6, Math.round(sh * 0.42));
-  const crop = document.createElement("canvas"); crop.width = cw; crop.height = ch;
-  crop.getContext("2d").drawImage(srcCanvas, sx, sy, cw, ch, 0, 0, cw, ch);
-  const cctx = crop.getContext("2d");
-  const cid = cctx.getImageData(0, 0, cw, ch);
-  const lum = meanLuminance(cid.data);
-  const threshold = lum * 0.82;
-  const color = classifyInkColor(cid.data, threshold);
-  const OCR = 64;
-  const ocrCv = document.createElement("canvas"); ocrCv.width = OCR; ocrCv.height = OCR;
-  const octx = ocrCv.getContext("2d");
-  octx.fillStyle = "#fff"; octx.fillRect(0, 0, OCR, OCR);
-  octx.drawImage(crop, 0, 0, cw, ch, 5, 5, OCR - 10, OCR - 10);
-  const oid = octx.getImageData(0, 0, OCR, OCR), od = oid.data;
-  for (let i = 0; i < od.length; i += 4) {
-    const l = (od[i] + od[i + 1] + od[i + 2]) / 3, v = l < threshold ? 0 : 255;
-    od[i] = od[i + 1] = od[i + 2] = v;
-  }
-  octx.putImageData(oid, 0, 0);
-  return { color, ocrCanvas: ocrCv };
-}
-
 /* ---------- faner ---------- */
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#tabs button").forEach(x => x.classList.remove("sel"));
@@ -529,13 +452,12 @@ $("undo").onclick = () => { if (G.rounds.length) { G.rounds.pop(); save(); rende
 $("newgame").onclick = () => { if (!confirm("Starte nytt spill? Alt slettes.")) return; localStorage.removeItem(LS); G = null; screen("t-setup"); };
 
 /* ---------- deltakervalg ---------- */
-let round = null; // { pids, hands:{pid:{top,mid,bot}}, idx, active:{row,idx}|null, photo, align, computed }
+let round = null; // { pids, hands:{pid:{top,mid,bot}}, idx, active:{row,idx}|null, photo, computed }
 let selectedParticipants = new Set();
 /* faste 3/5/5-plasser med null-hull (ikke en voksende/krympende liste) — slik
    at det å tappe én midt-i-hånden-plass alltid retter NØYAKTIG den plassen,
    uten å skyve de andre kortene rundt. */
 function blankHand() { return { top: Array(3).fill(null), mid: Array(5).fill(null), bot: Array(5).fill(null) }; }
-function defaultAlign() { return { x0: 0.08, y0: 0.05, x1: 0.92, y1: 0.95 }; }
 $("new-round").onclick = () => {
   selectedParticipants = new Set(G.players.slice(0, Math.min(3, G.players.length)).map(p => p.id));
   renderParticipants();
@@ -554,7 +476,7 @@ function renderParticipants() {
 $("part-cancel").onclick = showMain;
 $("part-go").onclick = () => {
   const pids = G.players.filter(p => selectedParticipants.has(p.id)).map(p => p.id);
-  round = { pids, hands: {}, idx: 0, active: null, photo: null, align: defaultAlign() };
+  round = { pids, hands: {}, idx: 0, active: null, photo: null };
   pids.forEach(id => round.hands[id] = blankHand());
   showCapture(0);
 };
@@ -578,7 +500,7 @@ function handComplete(pid) { return ROWS.every(([k]) => round.hands[pid][k].ever
 function handHasGuesses(pid) { return ROWS.some(([k]) => round.hands[pid][k].some(c => c && c.guessed)); }
 
 function showCapture(i) {
-  round.idx = i; round.active = firstEmptyForCurrent(); round.photo = null; round.align = defaultAlign();
+  round.idx = i; round.active = firstEmptyForCurrent(); round.photo = null;
   screen("t-round");
   $("cam-title").textContent = `📷 Ta bilde av kortene til ${pname(currentPid())}`;
   $("cam-take").textContent = "📷 Ta bilde av kortene";
@@ -642,245 +564,232 @@ function renderPalette() {
   $("palette").querySelectorAll(".pcard:not(.used)").forEach(b => b.onclick = () => placeCard(+b.dataset.r, +b.dataset.s));
 }
 
-/* ---------- kamera-opptak + justeringsrute ---------- */
+/* ---------- kamera-opptak ---------- */
 $("cam-take").onclick = () => $("cam-input").click();
 $("cam-input").addEventListener("change", e => {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
     round.photo = reader.result;
-    round.align = defaultAlign();
     $("align-img").src = round.photo;
     $("cam-take").textContent = "🔁 Ta nytt bilde";
     $("align-wrap").style.display = "block";
     $("ocr-status").textContent = "";
-    renderAlignOverlay();
   };
   reader.readAsDataURL(file);
   e.target.value = "";
 });
 
-/* dra-håndtak for justeringsruta (to hjørner definerer en rektangulær 13-celle rute) */
-let dragHandle = null;
-function svgFrac(e) {
-  const r = $("align-svg").getBoundingClientRect();
-  return { fx: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), fy: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) };
-}
-$("align-svg").addEventListener("pointerdown", e => {
-  const h = e.target.closest("[data-handle]");
-  if (!h) return;
-  dragHandle = h.dataset.handle; e.preventDefault();
-});
-window.addEventListener("pointermove", e => {
-  if (!dragHandle || !round) return;
-  const { fx, fy } = svgFrac(e), a = round.align;
-  if (dragHandle === "tl") { a.x0 = Math.min(fx, a.x1 - 0.15); a.y0 = Math.min(fy, a.y1 - 0.15); }
-  else { a.x1 = Math.max(fx, a.x0 + 0.15); a.y1 = Math.max(fy, a.y0 + 0.15); }
-  renderAlignOverlay();
-});
-window.addEventListener("pointerup", () => { dragHandle = null; });
-function renderAlignOverlay() {
-  if (!round || !round.photo) return;
-  const a = round.align, cells = cellRectsFrac(a);
-  let html = `<rect x="${a.x0*100}" y="${a.y0*100}" width="${(a.x1-a.x0)*100}" height="${(a.y1-a.y0)*100}" fill="rgba(199,62,58,0.08)" stroke="#c73e3a" stroke-width="0.6" vector-effect="non-scaling-stroke"/>`;
-  cells.forEach(c => {
-    html += `<rect x="${c.x*100}" y="${c.y*100}" width="${c.w*100}" height="${c.h*100}" fill="none" stroke="#c73e3a" stroke-width="0.3" stroke-dasharray="1,1" opacity="0.7"/>`;
-  });
-  html += `<circle data-handle="tl" cx="${a.x0*100}" cy="${a.y0*100}" r="3.4" fill="#c73e3a" stroke="#fff" stroke-width="0.8"/>`;
-  html += `<circle data-handle="br" cx="${a.x1*100}" cy="${a.y1*100}" r="3.4" fill="#c73e3a" stroke="#fff" stroke-width="0.8"/>`;
-  $("align-svg").innerHTML = html;
-}
-
-/* ---------- OCR: YOLOv8 (kortgjenkjenning, rangering+kulør i ett) med
-   Tesseract.js som reserve for celler YOLO ikke fant noe i ---------- */
-let tesseractLoading = null;
-function ensureTesseract() {
-  if (window.Tesseract) return Promise.resolve();
-  if (tesseractLoading) return tesseractLoading;
-  tesseractLoading = new Promise((resolve, reject) => {
+/* ---------- OCR: OpenCV.js — finn hvert kort som en kontur (fungerer uansett
+   fotovinkel, ingen manuell justering), rett det opp, og les rang+kulør med
+   matchTemplate mot en liten mal-samling fra spillerens EGEN kortstokk.
+   Alt kjører lokalt i nettleseren, ingen AI-modell, ingen server. ---------- */
+let cvLoading = null;
+function ensureOpenCv() {
+  if (window.cv && window.cv.Mat) return Promise.resolve();
+  if (cvLoading) return cvLoading;
+  cvLoading = new Promise((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/tesseract.min.js";
-    s.onload = resolve; s.onerror = () => reject(new Error("script-load-failed"));
+    s.src = "https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.9.0-release.1/dist/opencv.js";
+    s.onload = () => {
+      if (!window.cv) { reject(new Error("cv-missing-after-load")); return; }
+      const poll = () => { if (window.cv && window.cv.Mat) resolve(); else setTimeout(poll, 50); };
+      window.cv["onRuntimeInitialized"] = () => resolve();
+      poll();
+    };
+    s.onerror = () => reject(new Error("script-load-failed"));
     document.head.appendChild(s);
   });
-  return tesseractLoading;
+  return cvLoading;
 }
-
-let ortLoading = null;
-function ensureOrt() {
-  if (window.ort) return Promise.resolve();
-  if (ortLoading) return ortLoading;
-  ortLoading = new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js";
-    s.onload = resolve; s.onerror = () => reject(new Error("script-load-failed"));
-    document.head.appendChild(s);
+const RANK_NAMES = ["2","3","4","5","6","7","8","9","10","knekt","dame","konge","ess"];
+const RANK_VAL = { "2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"knekt":11,"dame":12,"konge":13,"ess":14 };
+const SUIT_NAMES = ["kloever","ruter","hjerter","spar"]; // matcher spillets egen SUITS-indeks 0..3
+let templatesLoading = null;
+function loadTemplate(cv, path) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const cnv = document.createElement("canvas"); cnv.width = img.naturalWidth; cnv.height = img.naturalHeight;
+      cnv.getContext("2d").drawImage(img, 0, 0);
+      const mat = cv.imread(cnv);
+      const gray = new cv.Mat(); cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY); mat.delete();
+      const bin = new cv.Mat(); cv.threshold(gray, bin, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU); gray.delete();
+      resolve(bin);
+    };
+    img.onerror = () => reject(new Error("template-load-failed: " + path));
+    img.src = path;
   });
-  return ortLoading;
 }
-/* klassenavn i samme rekkefølge som modellen ble trent (index → "rang+kulør",
-   f.eks "10C" = 10 kløver). Kulør-bokstavene matcher spillets egen SUITS-rekkefølge
-   (C=0 kløver, D=1 ruter, H=2 hjerter, S=3 spar). */
-const YOLO_CLASSES = ["10C","10D","10H","10S","2C","2D","2H","2S","3C","3D","3H","3S","4C","4D","4H","4S",
-  "5C","5D","5H","5S","6C","6D","6H","6S","7C","7D","7H","7S","8C","8D","8H","8S","9C","9D","9H","9S",
-  "AC","AD","AH","AS","JC","JD","JH","JS","KC","KD","KH","KS","QC","QD","QH","QS"];
-const YOLO_SUIT = { C: 0, D: 1, H: 2, S: 3 };
-function yoloClassToCard(name) {
-  const suit = YOLO_SUIT[name.slice(-1)];
-  const rankTok = name.slice(0, -1);
-  const rank = rankTok === "A" ? 14 : rankTok === "K" ? 13 : rankTok === "Q" ? 12 : rankTok === "J" ? 11 : +rankTok;
-  return { r: rank, s: suit };
+function ensureTemplates(cv) {
+  if (templatesLoading) return templatesLoading;
+  templatesLoading = (async () => {
+    const rank = {}, suit = {};
+    for (const r of RANK_NAMES) rank[r] = await loadTemplate(cv, `templates/rank/${r}.png`);
+    for (const s of SUIT_NAMES) suit[s] = await loadTemplate(cv, `templates/suit/${s}.png`);
+    return { rank, suit };
+  })();
+  return templatesLoading;
 }
-let ortSession = null;
-async function ensureYoloSession() {
-  if (ortSession) return ortSession;
-  await ensureOrt();
-  ortSession = await ort.InferenceSession.create("models/yolov8s_playing_cards.onnx", { executionProviders: ["wasm"] });
-  return ortSession;
-}
-/* skalerer bildet til 640×640 med "letterbox" (bevarer sideforhold, fyller resten
-   med grått) — samme forbehandling YOLO er trent med. Returnerer også skala/padding
-   slik at bokser kan regnes tilbake til brøkdel-koordinater i originalbildet. */
-function letterbox(srcCanvas, size) {
-  const iw = srcCanvas.width, ih = srcCanvas.height;
-  const scale = Math.min(size / iw, size / ih);
-  const nw = Math.round(iw * scale), nh = Math.round(ih * scale);
-  const padX = Math.floor((size - nw) / 2), padY = Math.floor((size - nh) / 2);
-  const cv = document.createElement("canvas"); cv.width = size; cv.height = size;
-  const ctx = cv.getContext("2d");
-  ctx.fillStyle = "#727272"; ctx.fillRect(0, 0, size, size);
-  ctx.drawImage(srcCanvas, 0, 0, iw, ih, padX, padY, nw, nh);
-  return { canvas: cv, scale, padX, padY };
-}
-function canvasToCHW(cv) {
-  const ctx = cv.getContext("2d"), { data } = ctx.getImageData(0, 0, cv.width, cv.height);
-  const n = cv.width * cv.height, out = new Float32Array(3 * n);
-  for (let i = 0; i < n; i++) {
-    out[i] = data[i * 4] / 255; out[n + i] = data[i * 4 + 1] / 255; out[2 * n + i] = data[i * 4 + 2] / 255;
-  }
-  return out;
-}
-/* enkel IoU + grådig NMS (undertrykker overlappende bokser for samme kort) */
-function iou(a, b) {
-  const x0 = Math.max(a.x0, b.x0), y0 = Math.max(a.y0, b.y0), x1 = Math.min(a.x1, b.x1), y1 = Math.min(a.y1, b.y1);
-  const inter = Math.max(0, x1 - x0) * Math.max(0, y1 - y0);
-  const areaA = (a.x1 - a.x0) * (a.y1 - a.y0), areaB = (b.x1 - b.x0) * (b.y1 - b.y0);
-  return inter / (areaA + areaB - inter);
-}
-function nms(boxes, iouThresh) {
-  const sorted = [...boxes].sort((a, b) => b.conf - a.conf), kept = [];
-  for (const b of sorted) if (!kept.some(k => iou(k, b) > iouThresh)) kept.push(b);
-  return kept;
-}
-/* kjører YOLO på hele bildet og returnerer bokser i BRØKDEL av original bildestørrelse. */
-async function detectCardsYolo(srcCanvas, confThresh) {
-  const session = await ensureYoloSession();
-  const SIZE = 416; // modellen er trent (og eksportert) på 416×416 — 640 gir mye dårligere treff
-  const { canvas: lb, scale, padX, padY } = letterbox(srcCanvas, SIZE);
-  const input = new ort.Tensor("float32", canvasToCHW(lb), [1, 3, SIZE, SIZE]);
-  const out = await session.run({ [session.inputNames[0]]: input });
-  const data = out[session.outputNames[0]].data; // (1,56,3549) flat
-  const nBox = 3549;
-  const raw = [];
-  for (let i = 0; i < nBox; i++) {
-    let bestCls = -1, bestScore = 0;
-    for (let c = 0; c < 52; c++) {
-      const v = data[(4 + c) * nBox + i];
-      if (v > bestScore) { bestScore = v; bestCls = c; }
+/* finner alle kortlignende (lyse, rektangulære) konturer i bildet — filtrert på
+   areal og sideforhold for å luke ut terningeske, avis, snacks osv fra bordet. */
+function findCardRects(cv, src) {
+  const gray = new cv.Mat(); cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+  const blur = new cv.Mat(); cv.GaussianBlur(gray, blur, new cv.Size(7, 7), 0);
+  const mean = cv.mean(blur)[0];
+  const thresh = new cv.Mat(); cv.threshold(blur, thresh, mean + 25, 255, cv.THRESH_BINARY);
+  const kernel = cv.Mat.ones(5, 5, cv.CV_8U);
+  const closed = new cv.Mat(); cv.morphologyEx(thresh, closed, cv.MORPH_CLOSE, kernel);
+  const contours = new cv.MatVector(), hierarchy = new cv.Mat();
+  cv.findContours(closed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+  const imgArea = src.rows * src.cols;
+  const rects = [];
+  for (let i = 0; i < contours.size(); i++) {
+    const c = contours.get(i);
+    const area = cv.contourArea(c);
+    // et enkelt kort dekker typisk 1.5–9% av et bordbilde med 13 kort utlagt
+    if (area > imgArea * 0.008 && area < imgArea * 0.14) {
+      const rect = cv.minAreaRect(c);
+      const ar = Math.max(rect.size.width, rect.size.height) / Math.max(1, Math.min(rect.size.width, rect.size.height));
+      if (ar > 1.2 && ar < 2.1) rects.push(rect); // spillkort-sideforhold ≈ 1.4–1.6
     }
-    if (bestScore < confThresh) continue;
-    const cx = data[0 * nBox + i], cy = data[1 * nBox + i], w = data[2 * nBox + i], h = data[3 * nBox + i];
-    // fjern letterbox-padding/skala, gjør om til brøkdel av originalbildet
-    const x0 = (cx - w / 2 - padX) / scale / srcCanvas.width, x1 = (cx + w / 2 - padX) / scale / srcCanvas.width;
-    const y0 = (cy - h / 2 - padY) / scale / srcCanvas.height, y1 = (cy + h / 2 - padY) / scale / srcCanvas.height;
-    raw.push({ x0, y0, x1, y1, conf: bestScore, cls: bestCls });
+    c.delete();
   }
-  return nms(raw, 0.45);
+  gray.delete(); blur.delete(); thresh.delete(); kernel.delete(); closed.delete(); contours.delete(); hierarchy.delete();
+  return rects;
 }
-/* fordeler YOLO-boksene til nærmeste ledige rutenett-celle (topp/midt/bunn × indeks),
-   grådig fra høyest konfidens, med kollisjons-/duplikatsjekk mot allerede fylte kort. */
-function assignBoxesToSlots(boxes, cells, hand, used) {
-  let filled = 0;
-  const sorted = [...boxes].sort((a, b) => b.conf - a.conf);
-  const takenCells = new Set();
-  for (const b of sorted) {
-    const bcx = (b.x0 + b.x1) / 2, bcy = (b.y0 + b.y1) / 2;
-    let best = null, bestD = Infinity;
-    for (const c of cells) {
-      const key = c.row + "-" + c.idx;
-      if (takenCells.has(key) || hand[c.row][c.idx]) continue;
-      const ccx = c.x + c.w / 2, ccy = c.y + c.h / 2;
-      const d = Math.hypot(bcx - ccx, bcy - ccy);
-      if (d < bestD) { bestD = d; best = c; }
+/* retter opp ett kort (roterer til stående) og beskjærer topp-venstre hjørne
+   (rang+kulør-indeksen), splittet i en rang-del og en kulør-del for uavhengig
+   matchTemplate mot mal-biblioteket. */
+function extractCorner(cv, src, rect) {
+  let { width: w, height: h } = rect.size, angle = rect.angle;
+  if (w > h) { [w, h] = [h, w]; angle += 90; }
+  const M = cv.getRotationMatrix2D(rect.center, angle, 1.0);
+  const rotated = new cv.Mat();
+  cv.warpAffine(src, rotated, M, new cv.Size(src.cols, src.rows));
+  M.delete();
+  const x0 = Math.max(0, Math.round(rect.center.x - w / 2)), y0 = Math.max(0, Math.round(rect.center.y - h / 2));
+  const cw = Math.min(Math.round(w), rotated.cols - x0), ch = Math.min(Math.round(h), rotated.rows - y0);
+  if (cw < 10 || ch < 10) { rotated.delete(); return null; }
+  const card = rotated.roi(new cv.Rect(x0, y0, cw, ch));
+  const corner = card.roi(new cv.Rect(0, 0, Math.round(cw * 0.24), Math.round(ch * 0.30)));
+  // kortene er ofte små i et bord-bilde (hele 13-korts oppsettet i én ramme) — hjørnet
+  // blir dermed bare noen titalls piksler bredt. Skalerer opp 3× med kubisk interpolasjon
+  // FØR gråtoning/splitting, slik at matchTemplate har nok detalj å jobbe med.
+  const cornerBig = new cv.Mat();
+  cv.resize(corner, cornerBig, new cv.Size(corner.cols * 3, corner.rows * 3), 0, 0, cv.INTER_CUBIC);
+  const cornerGray = new cv.Mat(); cv.cvtColor(cornerBig, cornerGray, cv.COLOR_RGBA2GRAY);
+  // binærterskle (Otsu) akkurat som malene — ren blekk-form-mot-form-matching,
+  // uavhengig av eksponering/hvitbalanse i akkurat dette bildet.
+  const cornerBin = new cv.Mat(); cv.threshold(cornerGray, cornerBin, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+  const rankPart = cornerBin.roi(new cv.Rect(0, 0, cornerBin.cols, Math.round(cornerBin.rows * 0.62)));
+  const suitPart = cornerBin.roi(new cv.Rect(0, Math.round(cornerBin.rows * 0.55), cornerBin.cols, cornerBin.rows - Math.round(cornerBin.rows * 0.55)));
+  const rankClone = rankPart.clone(), suitClone = suitPart.clone();
+  rotated.delete(); card.delete(); corner.delete(); cornerBig.delete(); cornerGray.delete(); cornerBin.delete(); rankPart.delete(); suitPart.delete();
+  return { rankMat: rankClone, suitMat: suitClone, cx: rect.center.x / src.cols, cy: rect.center.y / src.rows };
+}
+/* matcher en beskåret del mot hver mal i biblioteket. Glyfen fyller bare en DEL
+   av det beskårne området (som har litt margin rundt), og akkurat hvor stor del
+   varierer litt fra kort til kort — så vi prøver malen i noen ulike bredde-brøker
+   av søkeområdet i stedet for å gjette én fast skala. matchTemplate krever at
+   malen er STRENGT mindre enn søkeområdet i begge retninger. Returnerer navnet
+   med høyest score på tvers av alle mal × skala-forsøk. */
+function bestMatch(cv, part, templates) {
+  let best = null, bestScore = -1;
+  if (part.cols < 12 || part.rows < 12) return { name: null, score: -1 };
+  const fracs = [0.45, 0.55, 0.65, 0.75, 0.85];
+  for (const [name, tmpl] of Object.entries(templates)) {
+    for (const frac of fracs) {
+    const targetW = part.cols * frac;
+    const scale = targetW / tmpl.cols;
+    const tw = Math.min(part.cols - 2, Math.max(6, Math.round(tmpl.cols * scale)));
+    const th = Math.min(part.rows - 2, Math.max(6, Math.round(tmpl.rows * scale)));
+    if (tw < 6 || th < 6) continue;
+    const resized = new cv.Mat(); cv.resize(tmpl, resized, new cv.Size(tw, th));
+    const result = new cv.Mat();
+    cv.matchTemplate(part, resized, result, cv.TM_CCOEFF_NORMED);
+    const mm = cv.minMaxLoc(result);
+    if (mm.maxVal > bestScore) { bestScore = mm.maxVal; best = name; }
+    resized.delete(); result.delete();
     }
-    if (!best || bestD > 0.5) continue; // ingen ledig celle i nærheten
-    const card = yoloClassToCard(YOLO_CLASSES[b.cls]);
-    const key = card.r * 4 + card.s;
-    if (used.has(key)) continue; // duplikat av kort allerede lest et annet sted
-    hand[best.row][best.idx] = { r: card.r, s: card.s, guessed: true };
-    used.add(key); takenCells.add(best.row + "-" + best.idx); filled++;
   }
-  return filled;
+  return { name: best, score: bestScore };
 }
-
+/* grupperer detekterte kort i 3 rader (topp=3 kort, midt/bunn=5 kort) KUN ut
+   fra posisjonene til kortene selv — ingen manuell justeringsrute nødvendig.
+   Finner de to største "hoppene" i y-retning for å dele opp i rader, og
+   identifiserer raden med 3 kort som "Topp" uansett om den fysisk ligger
+   øverst eller nederst i bildet (den andre orienteringen speilvendes). */
+function clusterIntoRows(cards) {
+  if (cards.length < 3) return null;
+  const pts = [...cards].sort((a, b) => a.cy - b.cy);
+  const gaps = [];
+  for (let i = 1; i < pts.length; i++) gaps.push({ i, d: pts[i].cy - pts[i - 1].cy });
+  gaps.sort((a, b) => b.d - a.d);
+  const splits = gaps.slice(0, 2).map(g => g.i).sort((a, b) => a - b);
+  if (splits.length < 2 || splits[0] === splits[1]) return null;
+  const groups = [pts.slice(0, splits[0]), pts.slice(splits[0], splits[1]), pts.slice(splits[1])];
+  if (groups.some(g => g.length === 0)) return null;
+  const topIdx = groups.reduce((best, g, i) => Math.abs(g.length - 3) < Math.abs(groups[best].length - 3) ? i : best, 0);
+  const order = topIdx === 2 ? [2, 1, 0] : [0, 1, 2];
+  const [topG, midG, botG] = order.map(i => groups[i]);
+  return { top: topG, mid: midG, bot: botG };
+}
 $("cam-ocr").onclick = async () => {
   if (!round.photo) return;
   $("cam-ocr").disabled = true;
-  $("ocr-status").textContent = "Laster kortgjenkjenning … (kan ta noen sekunder første gang)";
-  let worker = null;
+  $("ocr-status").textContent = "Laster kortleser … (kan ta noen sekunder første gang)";
+  let mats = [];
   try {
+    await ensureOpenCv();
+    const templates = await ensureTemplates(cv);
     const img = $("align-img");
     if (!img.complete || !img.naturalWidth) await new Promise(res => { img.onload = res; });
-    const srcCv = document.createElement("canvas");
-    srcCv.width = img.naturalWidth; srcCv.height = img.naturalHeight;
-    srcCv.getContext("2d").drawImage(img, 0, 0);
-    const cells = cellRectsFrac(round.align);
+    const cnv = document.createElement("canvas"); cnv.width = img.naturalWidth; cnv.height = img.naturalHeight;
+    cnv.getContext("2d").drawImage(img, 0, 0);
+    const src = cv.imread(cnv); mats.push(src);
+    $("ocr-status").textContent = "Finner kortene …";
+    const rects = findCardRects(cv, src);
     const pid = currentPid();
     const used = usedCards();
     const hand = round.hands[pid];
-    let filled = 0, yoloOk = false;
-    try {
-      const boxes = await detectCardsYolo(srcCv, 0.35);
-      filled += assignBoxesToSlots(boxes, cells, hand, used);
-      yoloOk = true;
-    } catch (e) { /* YOLO utilgjengelig — går videre til Tesseract-reserven under */ }
-
-    // Tesseract som reserve for celler YOLO ikke fylte (eller om YOLO feilet helt)
-    const stillEmpty = cells.filter(c => !hand[c.row][c.idx]);
-    if (stillEmpty.length) {
-      $("ocr-status").textContent = "Leser gjenstående kort …";
-      await ensureTesseract();
-      /* v4.1.4 krever eksplisitt load→loadLanguage→initialize — createWorker("eng")
-         alene lar motoren stå uinitialisert (native API forblir null), som gjør at
-         setParameters/recognize feiler stille med "Klarte ikke lese bildet". */
-      worker = await Tesseract.createWorker();
-      await worker.load();
-      await worker.loadLanguage("eng");
-      await worker.initialize("eng");
-      await worker.setParameters({ tessedit_char_whitelist: "0123456789AJQKajqk", tessedit_pageseg_mode: "8" });
-      for (let i = 0; i < stillEmpty.length; i++) {
-        const cell = stillEmpty[i];
-        $("ocr-status").textContent = `Leser kort ${i + 1} av ${stillEmpty.length} …`;
-        if (hand[cell.row][cell.idx]) continue;
-        const sx = cell.x * srcCv.width, sy = cell.y * srcCv.height, sw = cell.w * srcCv.width, sh = cell.h * srcCv.height;
-        const { color, ocrCanvas } = analyzeCell(srcCv, sx, sy, sw, sh);
-        let rank = null;
-        try { const { data } = await worker.recognize(ocrCanvas); rank = parseRankToken((data.text || "").trim()); } catch (e) {}
-        if (rank == null) continue;
-        const s = defaultSuitFor(color, rank, used), key = rank * 4 + s;
-        if (used.has(key)) continue;
-        hand[cell.row][cell.idx] = { r: rank, s, guessed: true };
-        used.add(key); filled++;
+    const found = [];
+    for (let i = 0; i < rects.length; i++) {
+      $("ocr-status").textContent = `Leser kort ${i + 1} av ${rects.length} …`;
+      const ext = extractCorner(cv, src, rects[i]);
+      if (!ext) continue;
+      const { rankMat, suitMat, cx, cy } = ext;
+      const rankM = bestMatch(cv, rankMat, templates.rank);
+      const suitM = bestMatch(cv, suitMat, templates.suit);
+      rankMat.delete(); suitMat.delete();
+      if (rankM.name && suitM.name && rankM.score > 0.35 && suitM.score > 0.35) {
+        found.push({ r: RANK_VAL[rankM.name], s: SUIT_NAMES.indexOf(suitM.name), cx, cy });
+      }
+    }
+    const rows = clusterIntoRows(found);
+    let filled = 0;
+    if (rows) {
+      const specs = [["top", 3, rows.top], ["mid", 5, rows.mid], ["bot", 5, rows.bot]];
+      for (const [key, n] of specs) {
+        const byX = specs.find(s => s[0] === key)[2].slice().sort((a, b) => a.cx - b.cx).slice(0, n);
+        byX.forEach((c, idx) => {
+          if (idx >= n || hand[key][idx]) return;
+          const ck = c.r * 4 + c.s;
+          if (used.has(ck)) return;
+          hand[key][idx] = { r: c.r, s: c.s, guessed: true };
+          used.add(ck); filled++;
+        });
       }
     }
     round.active = firstEmptyForCurrent();
     $("ocr-status").textContent = filled
-      ? `Leste ${filled} av 13 kort automatisk${yoloOk ? "" : " (kortgjenkjenning utilgjengelig — brukte bare tekstlesing)"} — sjekk 🔍-merkede og fyll inn resten`
+      ? `Leste ${filled} av 13 kort automatisk — sjekk 🔍-merkede og fyll inn resten`
       : "Fant ingen kort automatisk — fyll inn manuelt under 👇";
   } catch (err) {
     $("ocr-status").textContent = "Klarte ikke lese bildet automatisk — fyll inn manuelt under 👇";
   } finally {
-    if (worker) { try { await worker.terminate(); } catch (e) {} }
+    mats.forEach(m => { try { m.delete(); } catch (e) {} });
     $("cam-ocr").disabled = false;
     $("cam-ocr").textContent = "🔁 Les på nytt";
     renderEdit();
